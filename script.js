@@ -96,6 +96,13 @@ function initFaqAccordion() {
 function initWorkGallery() {
   var track = document.getElementById('work-track');
   if (!track) return;
+  // Hide the arrows when every card already fits on screen.
+  var nav = document.querySelector('.work-nav');
+  var syncNav = function () {
+    if (nav) nav.style.visibility = track.scrollWidth > track.clientWidth + 1 ? '' : 'hidden';
+  };
+  syncNav();
+  window.addEventListener('resize', syncNav);
   document.querySelectorAll('.work-arrow').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var card = track.querySelector('.work-card');
