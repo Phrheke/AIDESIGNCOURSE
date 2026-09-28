@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initHeaderScrollState();
   initScrollReveal();
   initFaqAccordion();
-  initWorkGallery();
+  initStickyCta();
 });
 
 /* ---------- Copy account number ---------- */
@@ -92,22 +92,29 @@ function initFaqAccordion() {
   });
 }
 
-/* ---------- Student work gallery arrows ---------- */
-function initWorkGallery() {
-  var track = document.getElementById('work-track');
-  if (!track) return;
-  // Hide the arrows when every card already fits on screen.
-  var nav = document.querySelector('.work-nav');
-  var syncNav = function () {
-    if (nav) nav.style.visibility = track.scrollWidth > track.clientWidth + 1 ? '' : 'hidden';
+/* ---------- Sticky mobile CTA: show after the hero, hide while the payment
+   section or final CTA is on screen (they already have their own buttons) ---------- */
+function initStickyCta() {
+  var bar = document.getElementById('sticky-cta');
+  var hero = document.querySelector('.hero');
+  if (!bar || !hero || !('IntersectionObserver' in window)) return;
+  var link = bar.querySelector('a');
+  var onScreen = new Set();
+
+  var sync = function () {
+    var show = onScreen.size === 0;
+    bar.classList.toggle('is-visible', show);
+    bar.setAttribute('aria-hidden', show ? 'false' : 'true');
+    link.tabIndex = show ? 0 : -1;
+    document.body.classList.toggle('sticky-on', show);
   };
-  syncNav();
-  window.addEventListener('resize', syncNav);
-  document.querySelectorAll('.work-arrow').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var card = track.querySelector('.work-card');
-      var step = card ? card.getBoundingClientRect().width + 20 : 300;
-      track.scrollBy({ left: step * Number(btn.getAttribute('data-dir')), behavior: 'smooth' });
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) onScreen.add(e.target); else onScreen.delete(e.target);
     });
+    sync();
   });
+  [hero].concat(Array.prototype.slice.call(document.querySelectorAll('.payment, .final-cta')))
+    .forEach(function (el) { observer.observe(el); });
 }
