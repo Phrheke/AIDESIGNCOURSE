@@ -445,6 +445,61 @@
   .curr-item h3{font-size:18px;margin-bottom:6px;}
   .curr-item p{color:var(--navy-soft);font-size:15px;max-width:560px;}
 
+  /* ---------- STUDENT WORK (horizontal scroll-snap gallery) ---------- */
+  .section-head-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:24px;
+  }
+  .work-nav{display:flex;gap:10px;margin-bottom:44px;flex-shrink:0;}
+  .work-arrow{
+    width:48px;height:48px;
+    border-radius:50%;
+    border:2px solid var(--navy);
+    background:transparent;
+    color:var(--navy);
+    font-size:20px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .work-arrow:hover{background:var(--navy);color:#fff;}
+  .work-track{
+    list-style:none;
+    display:flex;
+    gap:20px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    /* first card lines up with .wrap content; trailing padding lets the last card snap fully */
+    padding:6px max(24px, calc((100vw - 1120px) / 2 + 24px)) 24px;
+    scroll-padding-inline:max(24px, calc((100vw - 1120px) / 2 + 24px));
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+  }
+  .work-track:focus-visible{outline:2px solid var(--orange);outline-offset:4px;}
+  .work-card{
+    flex:0 0 clamp(240px, 30vw, 320px);
+    scroll-snap-align:start;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:0 16px 36px -20px rgba(27,32,48,0.35);
+  }
+  .work-card img{width:100%;height:auto;aspect-ratio:800/1072;object-fit:cover;}
+  .work-caption{padding:14px 16px 16px;}
+  .work-caption strong{display:block;font-size:15px;font-weight:800;}
+  .work-caption span{font-size:13px;color:var(--navy-soft);}
+  .work-hint{display:none;font-size:13px;font-weight:600;color:var(--navy-soft);margin-top:4px;}
+  @media (max-width:640px){
+    .work-nav{display:none;}
+    .work-hint{display:block;}
+    .work-card{flex-basis:72vw;}
+    .work-track{padding-inline:20px;scroll-padding-inline:20px;gap:14px;}
+  }
+
   /* ---------- INSTRUCTOR ---------- */
   .instructor-inner{
     display:grid;

@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initHeaderScrollState();
   initScrollReveal();
   initFaqAccordion();
+  initWorkGallery();
 });
 
 /* ---------- Copy account number ---------- */
@@ -87,6 +88,19 @@ function initFaqAccordion() {
       var isOpen = item.getAttribute('data-open') === 'true';
       item.setAttribute('data-open', isOpen ? 'false' : 'true');
       trigger.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+    });
+  });
+}
+
+/* ---------- Student work gallery arrows ---------- */
+function initWorkGallery() {
+  var track = document.getElementById('work-track');
+  if (!track) return;
+  document.querySelectorAll('.work-arrow').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var card = track.querySelector('.work-card');
+      var step = card ? card.getBoundingClientRect().width + 20 : 300;
+      track.scrollBy({ left: step * Number(btn.getAttribute('data-dir')), behavior: 'smooth' });
     });
   });
 }
