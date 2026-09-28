@@ -569,7 +569,7 @@
     font-weight:900;
     font-size:clamp(48px,7vw,64px);
     color:var(--navy);
-    margin:26px 0 6px;
+    margin:0 0 6px;
   }
   .price-note{
     font-weight:700;
