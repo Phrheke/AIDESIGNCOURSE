@@ -1,11 +1,11 @@
 # Portfolio sites
 
-Two static portfolio sites, built from the research in [RESEARCH.md](RESEARCH.md).
+Two static portfolio sites, built from the research in [RESEARCH.md](RESEARCH.md) and checked against the AI-design tells in [AI-TELLS.md](AI-TELLS.md).
 
 | Site | Folder | Style |
 |---|---|---|
-| Graphic design | `graphic-design/` | White page, black type, cobalt accent, print details (crop marks, colour specs). Light and dark mode. |
-| Video editing | `video-editing/` | Dark by design, amber accent, timeline and timecode details. Reel first. |
+| Graphic design | `graphic-design/` | White paper, black ink, Lagos danfo yellow only on things you can click. Draggable before/after in the hero. |
+| Video editing | `video-editing/` | Editing-suite grey with YouTube Studio blue. Draggable raw-vs-edited wipe in the hero and a timeline that shows the cut. |
 
 No build step and no framework. Open `index.html` in a browser, or serve the folder:
 
@@ -18,18 +18,11 @@ Each folder is self-contained, so you can deploy either one on its own (Netlify 
 
 ---
 
-## Page structure (both sites)
+## Page structure
 
-1. **Hero**: who you help, what you make, one button, proof visible straight away
-2. **Client strip**: names or logos
-3. **Work**: strongest first, sorted by the kind of job a client is hiring for, one-line result under each
-4. **Mid-page call to action**
-5. **Services / pricing**: what's included, how long, "from" price
-6. **Process**: what happens after someone gets in touch
-7. **About** (design site)
-8. **FAQ**: price, timing, revisions, rights
-9. **Testimonials**: right above the form
-10. **Contact**: 4-field form + WhatsApp + email
+**Graphic design:** headline + before/after wipe → clients in a sentence → work (filterable) → price list → process (by day) → about → FAQ → quotes + contact form.
+
+**Video editing:** headline + raw-vs-edited wipe with "what changed" → the cut on a timeline → retention result → work by format → monthly packages → process (by day) → FAQ → quotes + contact form.
 
 The header button stays visible while scrolling, on phones too.
 
@@ -41,7 +34,7 @@ Everything marked as a placeholder must be replaced before you publish. **Never 
 
 ### Both sites
 - [ ] `yourname`: search and replace across all files (wordmark, titles, about text, footer)
-- [ ] Delete the grey "Template preview" banner at the top of each `index.html`
+- [ ] Delete the "This is a template" note at the top of each `index.html`
 - [ ] Hero headline: name your real niche and audience
 - [ ] Client strip: real clients only (with permission)
 - [ ] Testimonials: real quotes with full name, role and business
@@ -52,18 +45,20 @@ Everything marked as a placeholder must be replaced before you publish. **Never 
 - [ ] **Contact form**: create a free form at [formspree.io](https://formspree.io), then replace `YOUR_FORM_ID` in the form's `action`. Until then the form shows "Form not connected yet" instead of sending.
 
 ### Graphic design site
-- [ ] Project tiles: replace the CSS placeholder tiles (`.tile-kora`, `.tile-lumen`, …) with real mockup images, 1600×1200, `.webp`, under 300 KB each. Keep 4–8 projects.
+- [ ] Before/after in the hero: use your strongest redesign. Both images should share a layout so the wipe lines up.
+- [ ] Project tiles: replace the CSS placeholder tiles (`.tile-kora`, `.tile-lumen`, …) with real mockup images, `.webp`, under 300 KB each. Keep 4–8 projects.
 - [ ] Case studies: duplicate `work/mos-world-of-scents.html` for each project and keep the same section order. Point each card's link at its own page.
 - [ ] Outcome numbers on the case study page (`3×`, `12`, `6`): use real figures only, or describe what the client did with the work
 - [ ] About photo: `assets/instructor.webp` is currently used; swap it if it isn't you
 
 ### Video editing site
-- [ ] **Reel loop**: export a silent 10–15 second loop of your best cuts as `video-editing/assets/reel-loop.mp4` (1280×720, H.264, under 3 MB). Until then a styled placeholder shows.
-- [ ] **Full reel**: upload a 60–90 second reel to YouTube and put its 11-character ID in both `data-video="REEL_VIDEO_ID"` attributes
+- [ ] **Raw vs edited clips** (the most important item): pick one 6–10 second moment. Export it twice at the same length, once straight from the camera and once finished (graded, reframed, captioned), both 1280×720 H.264, muted, under 2 MB each. Put them in `video-editing/assets/` and set `data-raw-src="assets/raw.mp4"` and `data-edit-src="assets/edit.mp4"` on the `.ba` element in `index.html`. The sample illustration is replaced automatically and both clips play in sync under the wipe.
+- [ ] **"What changed" list**: rewrite the four items for your real example (timecodes, seconds cut).
+- [ ] **The cut timeline**: edit the `clips` array in `script.js` with your real edit decisions (start and end seconds of each kept and cut section, and the order kept sections appear in the edit). The raw and edited lengths update automatically.
+- [ ] **Full reel**: upload a 60–90 second reel to YouTube and put its 11-character ID in `data-video="REEL_VIDEO_ID"`
 - [ ] **Each video**: put its YouTube ID in `data-video` (players only load when clicked) and set a real thumbnail as the button's `background-image`
-- [ ] Raw vs edited: upload both versions and set the IDs in `script.js` (`versions.raw.id`, `versions.edit.id`)
-- [ ] Retention chart: replace the `retention` array in `script.js` with real numbers from YouTube Studio (Analytics → Engagement → Audience retention), with the creator's permission
-- [ ] Hero stats (`48M+`, `+38%`, `600+`, `72h`) and every result chip under the videos
+- [ ] Retention chart: replace the `retention` array in `script.js` with real numbers from YouTube Studio (Analytics → Engagement → Audience retention), with the creator's permission, and update the 34% → 52% sentence
+- [ ] Every result line under the videos
 
 ---
 

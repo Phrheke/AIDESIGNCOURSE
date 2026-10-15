@@ -34,7 +34,7 @@ A note on evidence: almost nothing about portfolios has been measured in control
 - Show systems, not single pieces: logo + palette + type + real mockups; a full social campaign rather than 30 unrelated posts **[consensus]**.
 - Use a consistent format across case studies, and specific titles ("Mo's World of Scents: launch flyer redesign"), never "Project 3" **[consensus]**.
 
-**What the sites do about it**: The graphic design site has a full case-study page template (`work/mos-world-of-scents.html`) with those sections in that order. Every project card has a one-line outcome under it.
+**What the sites do about it**: The graphic design site opens with a draggable before/after of a real redesign, and has a full case-study page template (`work/mos-world-of-scents.html`) with those sections in that order. Every project has a one-line result under it.
 
 ## 4. For video: reel first, short, sound-off friendly, and prove results
 
@@ -45,7 +45,7 @@ A note on evidence: almost nothing about portfolios has been measured in control
 - Pitch retainers. Monthly packages turn one-off jobs into steady income **[consensus]**.
 - Default YouTube embeds pull roughly 0.8–2.6 MB of scripts before anyone presses play. A click-to-load "facade" avoids that; one monitoring dataset reported pages using one had ~800ms faster LCP **[data, single source]**.
 
-**What the sites do about it**: The video site opens with a muted, looping reel preview and a "Watch the 75-second reel" button. It has a raw-vs-edited comparison with a list of exactly what changed, an audience-retention chart, and monthly retainer packages. All players load only on click.
+**What the sites do about it**: The video site opens with a draggable raw-vs-edited comparison, a list of exactly what changed, and a timeline showing what was cut. A single retention result follows. The full reel is one click away, and every player loads only on click.
 
 ## 5. Make contacting you easy and low-risk
 
@@ -57,13 +57,11 @@ A note on evidence: almost nothing about portfolios has been measured in control
 - A visible process (what happens after you click) and an FAQ (price, timeline, revisions) remove the reasons people hesitate **[consensus]**.
 - Showing a "from" price: no study found. Practitioners use it to filter out mismatched budgets. Both sites include it; delete it if you'd rather quote everything.
 
-**What the sites do about it**: A 4-field form with response time stated, plus WhatsApp as a second option (most clients in Nigeria prefer it to email). The CTA sits in a sticky header (always visible, on phones too), after the work, and at the end. Testimonials sit directly above the contact section.
+**What the sites do about it**: A 4-field form with response time stated, plus WhatsApp as a second option (most clients in Nigeria prefer it to email). The main button sits in a sticky header (always visible, on phones too), each price has its own "Ask about" link that fills in the form, and quotes sit directly above the contact form.
 
 ## 6. Style: let the work be the loudest thing
 
-- **Graphic design site**: a white page, black type and one strong accent. Print-production details (crop marks, colour swatches, spec lines) act as quiet signals of craft. The project images carry the colour.
-- **Video site**: dark by design, because footage reads better on a dark surface and every editing tool uses one. Timeline and timecode details come from the editor's own software. Amber is the single accent.
-- Both avoid the looks that now read as "AI template": purple-to-blue gradients, emoji section markers, everything centred, generic stock imagery.
+The visual style was rebuilt after checking it against the tells people use to spot AI-made sites. See [AI-TELLS.md](AI-TELLS.md) for the full list, the sources, and what changed.
 
 ---
 
