@@ -3,292 +3,170 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>yourname, brand and flyer designer in Lagos</title>
-<meta name="description" content="Brand identity, packaging and flyer design for small businesses in Lagos and abroad. See the before and after, then get a fixed quote.">
-<meta property="og:title" content="yourname, brand and flyer designer in Lagos">
-<meta property="og:description" content="Brand identity, packaging and flyer design for small businesses. Fixed quotes, two concepts, files your printer accepts.">
-<meta property="og:image" content="assets/after-good.jpg">
+<title>Ndifreke Akpan, graphic designer</title>
+<meta name="description" content="Graphic designer in Nigeria. Brand identity, packaging, flyers and social media design. Open to full-time roles and freelance projects.">
+<meta property="og:title" content="Ndifreke Akpan, graphic designer">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-page="home">
 
-<!-- Delete this note once every sample project, client name, quote and number is replaced with your own. -->
-<p class="template-note">This is a template. Projects, client names, quotes and numbers are placeholders until you replace them (see portfolio/README.md).</p>
+<!-- Delete this note once the sample gallery images and projects are replaced in /admin. -->
+<p class="template-note">The gallery and projects are placeholders. Replace them in the admin at /admin.</p>
 
 <header class="site-header">
   <div class="wrap header-inner">
-    <a href="#top" class="wordmark">yourname</a>
+    <a href="#top" class="wordmark" data-bind="name">Ndifreke Akpan</a>
     <nav class="main-nav" aria-label="Main">
       <a href="#work">Work</a>
-      <a href="#prices">Prices</a>
       <a href="#process">Process</a>
       <a href="#about">About</a>
+      <a href="#contact">Contact</a>
       <span class="nav-marker" aria-hidden="true"></span>
     </nav>
-    <a href="#contact" class="btn btn-primary btn-sm">Get a quote</a>
+    <a href="#contact" class="btn btn-primary btn-sm">Get in touch</a>
   </div>
 </header>
 
 <main id="top">
 
-  <section class="hero">
-    <div class="wrap hero-grid">
-      <div class="hero-copy">
-        <!-- avoid-ai-design-ignore: SD5 (spans are line breaks for the load animation; no word is accented) -->
-        <h1 class="hero-title">
-          <span class="line">I design brands</span>
-          <span class="line">that make small</span>
-          <span class="line">businesses look</span>
-          <span class="line">established.</span>
-        </h1>
-        <p class="lead">Logos, packaging, flyers and social posts for founders in Lagos and abroad who have outgrown doing it themselves.</p>
-        <div class="hero-actions">
-          <a href="#contact" class="btn btn-primary">Get a quote</a>
-          <a href="work/mos-world-of-scents.html" class="btn btn-quiet">Read the Mo's case study</a>
-        </div>
-        <p class="availability">Taking two new projects in November.</p>
-      </div>
-
-      <figure class="hero-proof">
-        <div class="proof-frame">
-        <span class="crop crop-tl" aria-hidden="true"></span>
-        <span class="crop crop-tr" aria-hidden="true"></span>
-        <span class="crop crop-bl" aria-hidden="true"></span>
-        <span class="crop crop-br" aria-hidden="true"></span>
-        <!-- Before/after wipe. The range input gives keyboard, touch and screen-reader control for free. -->
-        <div class="ba" data-ba style="--pos:50%">
-          <div class="ba-layer ba-before">
-            <img draggable="false" src="assets/before-bad.jpg" alt="Before: pink flyer with four typefaces, three badges and fourteen products" width="560" height="840" fetchpriority="high">
-          </div>
-          <div class="ba-layer ba-after">
-            <img draggable="false" src="assets/after-good.jpg" alt="After: cream flyer with one headline, one benefits panel and five bottles" width="560" height="695" fetchpriority="high" style="view-transition-name: mos-flyer">
-          </div>
-          <span class="ba-tag ba-tag-before" aria-hidden="true">Before</span>
-          <span class="ba-tag ba-tag-after" aria-hidden="true">After</span>
-          <span class="ba-handle" aria-hidden="true"><span></span></span>
-          <input class="ba-range" type="range" min="0" max="100" value="50" step="1" aria-label="Compare before and after. Move left to see more of the redesign.">
-        </div>
-        </div>
-        <figcaption>Drag the line. Wholesale flyer for Mo's World of Scents, redesigned in six days.</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="clients" aria-label="Recent clients">
+  <section class="hero" aria-labelledby="hero-name">
     <div class="wrap">
-      <p>Recent clients: <strong>Mo's World of Scents</strong>, <strong>Kora Coffee</strong>, <strong>Lumen Dental</strong>, <strong>Ògo Skincare</strong> and <strong>Ankara Run Club</strong>.</p>
+      <div class="hero-intro">
+        <div class="hero-id">
+          <h1 id="hero-name" data-bind="name">Ndifreke Akpan</h1>
+          <p class="hero-role" id="hero-role">Graphic designer</p>
+        </div>
+        <div class="hero-side">
+          <p class="hero-text" id="hero-intro"></p>
+          <ul class="availability" id="availability"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="wrap wrap-wide">
+      <div class="gallery" id="gallery" aria-label="Selected work"></div>
     </div>
   </section>
 
-  <section class="work" id="work">
+  <section class="ways" id="ways" aria-label="Ways to work with me">
+    <div class="wrap ways-grid">
+      <article class="way" id="way-hire">
+        <h2 id="hire-heading">Join your team</h2>
+        <div class="way-body" id="hire-body"></div>
+        <div class="way-actions">
+          <a href="#contact" class="btn btn-primary" data-intent="role" id="hire-button">Talk about a role</a>
+          <a href="#" class="btn btn-quiet" id="hire-cv" hidden download>Download my CV</a>
+          <a href="#" class="text-link" id="hire-linkedin" hidden target="_blank" rel="noopener">See my LinkedIn</a>
+        </div>
+      </article>
+      <article class="way" id="way-freelance">
+        <h2 id="freelance-heading">Hire me for a project</h2>
+        <div class="way-body" id="freelance-body"></div>
+        <ul class="services" id="services"></ul>
+        <div class="way-actions">
+          <a href="#contact" class="btn btn-primary" data-intent="project" id="freelance-button">Start a project</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="work" id="work" aria-labelledby="work-title">
     <div class="wrap">
-      <div class="work-head">
-        <h2>Recent work</h2>
-        <div class="filters" role="group" aria-label="Show projects by type">
-          <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
-          <button type="button" class="chip" data-filter="identity" aria-pressed="false">Brand identity</button>
-          <button type="button" class="chip" data-filter="packaging" aria-pressed="false">Packaging</button>
-          <button type="button" class="chip" data-filter="campaign" aria-pressed="false">Flyers and social</button>
-        </div>
-      </div>
-
-      <!-- Replace each placeholder tile with a real mockup image (1600×1200 webp). Duplicate the case study page for each project. -->
-      <div class="work-grid">
-        <a class="project p-kora" data-type="identity" href="work/mos-world-of-scents.html" style="view-transition-name: p-kora">
-          <div class="project-media tile tile-kora"><span class="tile-mark">kora</span></div>
-          <h3>Kora Coffee</h3>
-          <p>Brand identity and cup system for a second shop, 2025. Opening week sold out of branded tumblers.</p>
-        </a>
-        <a class="project p-lumen" data-type="identity" href="work/mos-world-of-scents.html" style="view-transition-name: p-lumen">
-          <div class="project-media tile tile-lumen"><span class="tile-mark">Lumen<br>Dental</span></div>
-          <h3>Lumen Dental</h3>
-          <p>A calmer identity for a family clinic moving upmarket, 2024.</p>
-        </a>
-        <a class="project p-ogo" data-type="packaging" href="work/mos-world-of-scents.html" style="view-transition-name: p-ogo">
-          <div class="project-media tile tile-ogo">
-            <span class="bottle" aria-hidden="true"><span>ògo</span></span>
-            <span class="bottle bottle-sm" aria-hidden="true"><span>ògo</span></span>
-          </div>
-          <h3>Ògo Skincare</h3>
-          <p>One label system for four products, so the range reads as a family on the shelf, 2024.</p>
-        </a>
-        <a class="project p-run" data-type="campaign" href="work/mos-world-of-scents.html" style="view-transition-name: p-run">
-          <div class="project-media tile tile-run">
-            <span class="post">5K</span><span class="post post-alt">Sat<br>6am</span><span class="post post-alt">Run<br>club</span><span class="post">Lekki</span>
-          </div>
-          <h3>Ankara Run Club</h3>
-          <p>Twelve launch posts built on one grid, 2025. The club went from 40 to 300 weekly runners.</p>
-        </a>
-        <a class="project p-mos" data-type="campaign" href="work/mos-world-of-scents.html" style="view-transition-name: p-mos">
-          <div class="project-media tile tile-mos"><img src="assets/after-good.jpg" alt="" width="560" height="695" loading="lazy"></div>
-          <h3>Mo's World of Scents</h3>
-          <p>Wholesale flyer redesign, 2025. Fourteen products became five, four typefaces became two.</p>
-        </a>
-      </div>
-      <p class="work-empty" hidden>Nothing in this category yet.</p>
+      <h2 id="work-title">Projects</h2>
+      <div class="project-grid" id="projects"></div>
+      <p class="empty" id="projects-empty" hidden>New projects are on the way.</p>
     </div>
   </section>
 
-  <section class="prices" id="prices">
+  <section class="process" id="process" aria-labelledby="process-title">
     <div class="wrap">
-      <div class="prices-head">
-        <h2>What it costs</h2>
-        <p>Every project gets a fixed quote before we start. You pay 50% to book and 50% when the files are delivered.</p>
+      <div class="process-head">
+        <h2 id="process-title">How I work</h2>
+        <p id="process-intro"></p>
       </div>
-      <div class="price-list" role="list">
-        <div class="price-row" role="listitem">
-          <h3>Brand identity</h3>
-          <p class="price-what">Logo suite, colours, type, business card and social templates, and a 10-page guide.</p>
-          <p class="price-time">3 to 4 weeks</p>
-          <p class="price-amount">from $900</p>
-          <a href="#contact" class="price-link" data-project="Brand identity">Ask about identity work</a>
-        </div>
-        <div class="price-row" role="listitem">
-          <h3>Flyers and social</h3>
-          <p class="price-what">A flyer or poster plus 8 to 12 matching posts, with editable Canva templates.</p>
-          <p class="price-time">1 to 2 weeks</p>
-          <p class="price-amount">from $350</p>
-          <a href="#contact" class="price-link" data-project="Flyers / social">Ask about flyers</a>
-        </div>
-        <div class="price-row" role="listitem">
-          <h3>Packaging and print</h3>
-          <p class="price-what">Label or box design per product, dielines checked with your printer, store mockups.</p>
-          <p class="price-time">2 to 3 weeks</p>
-          <p class="price-amount">from $450</p>
-          <a href="#contact" class="price-link" data-project="Packaging / print">Ask about packaging</a>
-        </div>
+      <div class="process-flow" id="process-flow">
+        <ol class="steps" id="process-steps"></ol>
+        <svg class="loop" id="process-loop" aria-hidden="true" focusable="false"></svg>
       </div>
     </div>
   </section>
 
-  <section class="process" id="process">
-    <div class="wrap">
-      <h2>What happens after you send the form</h2>
-      <ol class="steps">
-        <li>
-          <p class="step-when">Day 1</p>
-          <h3>A 20-minute call</h3>
-          <p>We talk about your business and your customers. You get a fixed quote the same day.</p>
-        </li>
-        <li>
-          <p class="step-when">Day 2</p>
-          <h3>Deposit and a one-page brief</h3>
-          <p>The deposit books your slot. The brief makes sure we agree on goals before I design anything.</p>
-        </li>
-        <li>
-          <p class="step-when">Day 7 to 10</p>
-          <h3>Two directions</h3>
-          <p>You see two different concepts on real mockups, with my reasoning for each.</p>
-        </li>
-        <li>
-          <p class="step-when">Day 14</p>
-          <h3>Final files</h3>
-          <p>After two rounds of changes you get AI, SVG, PDF and PNG files, plus a guide anyone on your team can follow.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="about" id="about">
+  <section class="about" id="about" aria-labelledby="about-title">
     <div class="wrap about-grid">
-      <img class="about-photo" src="assets/instructor.webp" alt="Portrait of yourname" width="1254" height="1254" loading="lazy">
+      <div class="about-photo-wrap" id="about-photo"></div>
       <div class="about-copy">
-        <h2>Hi, I'm yourname.</h2>
-        <p>For five years I've designed for businesses where every naira of marketing has to pay for itself: perfume sellers, clinics, coffee shops, run clubs. I care less about trends and more about whether a customer trusts you in the three seconds they spend on your flyer.</p>
-        <p>I work in Illustrator, Photoshop, InDesign and Figma. I use AI tools to try ideas quickly, and I draw, set and check every final file by hand.</p>
-        <p class="about-facts">Based in Lagos. Clients in Nigeria, the UK, the US and Ghana. I reply within a day, Monday to Friday.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="faq" aria-labelledby="faq-title">
-    <div class="wrap faq-grid">
-      <h2 id="faq-title">Questions people ask before booking</h2>
-      <div class="faq-list">
-        <details>
-          <summary>How much will my project cost?</summary>
-          <div class="faq-body"><p>Identity work starts at $900, flyers and social at $350, packaging at $450. You get a fixed quote after our call, and it doesn't change halfway through.</p></div>
-        </details>
-        <details>
-          <summary>How long does it take?</summary>
-          <div class="faq-body"><p>Flyers take one to two weeks, identities three to four. If you have a launch date, put it in the form and I'll tell you honestly whether it's possible.</p></div>
-        </details>
-        <details>
-          <summary>How many changes can I ask for?</summary>
-          <div class="faq-body"><p>Two full rounds are included. Most clients don't need both, because we agree on the brief before design starts.</p></div>
-        </details>
-        <details>
-          <summary>Do you use AI?</summary>
-          <div class="faq-body"><p>For exploring ideas and mocking up scenes, yes. Logos, layouts and type are drawn and set by hand, and you own full commercial rights to everything I deliver.</p></div>
-        </details>
-        <details>
-          <summary>Can you work with me if I'm outside Nigeria?</summary>
-          <div class="faq-body"><p>Yes. About half my clients are in the UK and US. I invoice in dollars or pounds and we talk on Google Meet or WhatsApp.</p></div>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <section class="contact" id="contact">
-    <div class="wrap">
-      <!-- Real quotes only: full name, role, business. -->
-      <figure class="quote-lead">
-        <blockquote>“Customers started asking if we'd hired an agency. The new flyer paid for itself in the first weekend.”</blockquote>
-        <figcaption>Mo Adeyemi, founder of Mo's World of Scents</figcaption>
-      </figure>
-
-      <div class="contact-grid">
-        <div class="contact-copy">
-          <h2>Tell me about your project</h2>
-          <p>A few lines is enough. I'll reply within a day with questions or a quote.</p>
-          <p class="contact-alt">Prefer chatting? <a href="https://wa.me/2340000000000" target="_blank" rel="noopener">Message me on WhatsApp</a>, or email <span class="email" id="email-text">hello@yourname.com</span> <button type="button" class="copy" id="copy-email">Copy</button></p>
-          <figure class="quote-small">
-            <blockquote>“Two strong directions, and files our printer accepted the first time.”</blockquote>
-            <figcaption>Tola Okonkwo, owner of Kora Coffee</figcaption>
-          </figure>
+        <h2 id="about-title">About me</h2>
+        <div id="about-body"></div>
+        <div class="about-tools" id="about-tools" hidden>
+          <h3>Tools</h3>
+          <ul class="tag-list" id="tools-list"></ul>
         </div>
-
-        <!-- Connect a form service: create a free form at formspree.io and replace YOUR_FORM_ID. -->
-        <form class="contact-form" id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
-          <div class="form-fields">
-            <div class="field">
-              <label for="f-name">Your name</label>
-              <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="f-name-err">
-              <p class="field-error" id="f-name-err">Add your name so I know who to reply to.</p>
-            </div>
-            <div class="field">
-              <label for="f-email">Email</label>
-              <input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="f-email-err">
-              <p class="field-error" id="f-email-err">Enter an email like name@business.com.</p>
-            </div>
-            <div class="field">
-              <label for="f-type">What do you need?</label>
-              <select id="f-type" name="project_type" required aria-describedby="f-type-err">
-                <option value="" selected disabled>Choose one</option>
-                <option>Brand identity</option>
-                <option>Flyers / social</option>
-                <option>Packaging / print</option>
-                <option>Something else</option>
-              </select>
-              <p class="field-error" id="f-type-err">Pick the closest option.</p>
-            </div>
-            <div class="field">
-              <label for="f-msg">About the project</label>
-              <textarea id="f-msg" name="message" rows="4" placeholder="What's the business, and when do you need it?" required aria-describedby="f-msg-err"></textarea>
-              <p class="field-error" id="f-msg-err">A sentence or two about the project helps me quote.</p>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block" id="f-submit"><span class="btn-label">Send project details</span><span class="spinner" aria-hidden="true"></span></button>
-            <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
-          </div>
-          <div class="form-done" id="form-done" hidden tabindex="-1">
-            <h3>Project details sent</h3>
-            <p>Thanks. I'll reply within a day. If it's urgent, message me on WhatsApp.</p>
-          </div>
-        </form>
+        <div class="about-experience" id="about-experience" hidden>
+          <h3>Experience</h3>
+          <ul class="experience" id="experience-list"></ul>
+        </div>
       </div>
+    </div>
+  </section>
+
+  <section class="quotes" id="quotes" aria-label="What clients say" hidden>
+    <div class="wrap quote-grid" id="quote-grid"></div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap contact-grid">
+      <div class="contact-copy">
+        <h2 id="contact-title">Let's talk</h2>
+        <p id="contact-body">Tell me about the role or the project. I'll reply within a day.</p>
+        <p class="contact-alt" id="contact-alt"></p>
+        <ul class="social" id="contact-social"></ul>
+      </div>
+
+      <!-- Works on Netlify with no setup (Netlify Forms). Add a Formspree ID in the admin to use Formspree instead. -->
+      <form class="contact-form" id="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="company" novalidate>
+        <input type="hidden" name="form-name" value="contact">
+        <p class="hp" aria-hidden="true"><label>Leave this empty <input name="company" tabindex="-1" autocomplete="off"></label></p>
+        <div class="form-fields">
+          <div class="field">
+            <label for="f-intent">What's this about?</label>
+            <select id="f-intent" name="intent" required aria-describedby="f-intent-err">
+              <option value="" selected disabled>Choose one</option>
+              <option value="role">A full-time or contract role</option>
+              <option value="project">A freelance project</option>
+              <option value="other">Something else</option>
+            </select>
+            <p class="field-error" id="f-intent-err">Pick the closest option.</p>
+          </div>
+          <div class="field">
+            <label for="f-name">Your name</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" aria-describedby="f-name-err">
+            <p class="field-error" id="f-name-err">Add your name so I know who to reply to.</p>
+          </div>
+          <div class="field">
+            <label for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" aria-describedby="f-email-err">
+            <p class="field-error" id="f-email-err">Enter an email like name@company.com.</p>
+          </div>
+          <div class="field" id="f-company-field" hidden>
+            <label for="f-company">Company <span class="optional">(optional)</span></label>
+            <input id="f-company" name="company_name" type="text" autocomplete="organization" maxlength="120">
+          </div>
+          <div class="field">
+            <label for="f-msg" id="f-msg-label">Message</label>
+            <textarea id="f-msg" name="message" rows="5" required maxlength="4000" aria-describedby="f-msg-err"></textarea>
+            <p class="field-error" id="f-msg-err">Add a sentence or two so I can reply properly.</p>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="f-submit"><span class="btn-label">Send message</span><span class="spinner" aria-hidden="true"></span></button>
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        </div>
+        <div class="form-done" id="form-done" hidden tabindex="-1">
+          <h3>Message sent</h3>
+          <p>Thanks. I'll reply within a day.</p>
+        </div>
+      </form>
     </div>
   </section>
 
@@ -296,11 +174,25 @@
 
 <footer class="site-footer">
   <div class="wrap footer-inner">
-    <p>© <span id="year">2026</span> yourname, Lagos</p>
-    <p><a href="https://www.behance.net/" target="_blank" rel="noopener">Behance</a> <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a> <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></p>
+    <p>© <span id="year">2026</span> <span data-bind="name">Ndifreke Akpan</span></p>
+    <ul class="social social-footer" id="footer-social"></ul>
   </div>
 </footer>
 
-<script src="script.js"></script>
+<dialog class="lightbox" id="lightbox" aria-label="Image viewer">
+  <div class="lb-stage">
+    <img class="lb-img" id="lb-img" alt="">
+  </div>
+  <div class="lb-bar">
+    <p class="lb-caption" id="lb-caption"></p>
+    <p class="lb-count" id="lb-count"></p>
+    <a class="lb-project" id="lb-project" href="#" hidden>View project</a>
+  </div>
+  <button type="button" class="lb-btn lb-prev" id="lb-prev" aria-label="Previous image"></button>
+  <button type="button" class="lb-btn lb-next" id="lb-next" aria-label="Next image"></button>
+  <button type="button" class="lb-close" id="lb-close">Close</button>
+</dialog>
+
+<script src="js/app.js"></script>
 </body>
 </html>

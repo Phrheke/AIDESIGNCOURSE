@@ -1,0 +1,58 @@
+{
+  "images": [
+    {
+      "image": "/uploads/sample-gallery-1.svg",
+      "title": "Brand identity (sample)",
+      "alt": "Placeholder for gallery image 1",
+      "project": "sample-brand-identity"
+    },
+    {
+      "image": "/uploads/sample-gallery-2.svg",
+      "title": "Packaging (sample)",
+      "alt": "Placeholder for gallery image 2",
+      "project": "sample-packaging"
+    },
+    {
+      "image": "/uploads/sample-gallery-3.svg",
+      "title": "Poster (sample)",
+      "alt": "Placeholder for gallery image 3",
+      "project": "sample-social-campaign"
+    },
+    {
+      "image": "/uploads/sample-gallery-4.svg",
+      "title": "Social campaign (sample)",
+      "alt": "Placeholder for gallery image 4",
+      "project": "sample-brand-identity"
+    },
+    {
+      "image": "/uploads/sample-gallery-5.svg",
+      "title": "Signage (sample)",
+      "alt": "Placeholder for gallery image 5",
+      "project": "sample-packaging"
+    },
+    {
+      "image": "/uploads/sample-gallery-6.svg",
+      "title": "Label system (sample)",
+      "alt": "Placeholder for gallery image 6",
+      "project": "sample-social-campaign"
+    },
+    {
+      "image": "/uploads/sample-gallery-7.svg",
+      "title": "Logo (sample)",
+      "alt": "Placeholder for gallery image 7",
+      "project": "sample-brand-identity"
+    },
+    {
+      "image": "/uploads/sample-gallery-8.svg",
+      "title": "Flyer (sample)",
+      "alt": "Placeholder for gallery image 8",
+      "project": "sample-packaging"
+    },
+    {
+      "image": "/uploads/sample-gallery-9.svg",
+      "title": "Brand guide (sample)",
+      "alt": "Placeholder for gallery image 9",
+      "project": "sample-social-campaign"
+    }
+  ]
+}

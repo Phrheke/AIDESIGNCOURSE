@@ -1,0 +1,316 @@
+# Admin for the portfolio, powered by Decap CMS (https://decapcms.org).
+# Every "Publish" saves a commit to GitHub; Netlify rebuilds the site in about a minute.
+# Paths are relative to the root of the GitHub repository.
+
+backend:
+  name: github
+  repo: Phrheke/AIDESIGNCOURSE   # change if you move the portfolio to its own repository
+  branch: main
+
+# Lets you try the admin on your own computer with `npx decap-server` (ignored on the live site).
+local_backend: true
+
+site_url: /
+display_url: /
+logo_url: /admin/logo.svg
+media_folder: portfolio/graphic-design/uploads
+public_folder: /uploads
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+
+  # ---------------------------------------------------------------- Top gallery
+  - name: gallery
+    label: Top gallery
+    description: The images at the top of your homepage. Drag to reorder. The first four load first, so put your strongest work there. Any shape works (tall, square or wide); nothing gets cropped.
+    files:
+      - name: gallery
+        label: Gallery images
+        file: portfolio/graphic-design/content/gallery.json
+        format: json
+        fields:
+          - name: images
+            label: Images
+            label_singular: image
+            widget: list
+            min: 1
+            max: 30
+            summary: "{{fields.title}}"
+            hint: Between 6 and 12 images looks best. JPG, PNG or WebP, ideally 1600 to 2400 pixels on the long side and under 2 MB each.
+            fields:
+              - { name: image, label: Image, widget: image, choose_url: false, media_library: { max_file_size: 10000000 } }
+              - name: title
+                label: Caption
+                widget: string
+                required: false
+                hint: Shown under the image, e.g. "Label system for Ògo Skincare". Up to 70 characters.
+                pattern: ['^.{0,70}$', 'Keep the caption under 70 characters']
+              - name: alt
+                label: Describe the image
+                widget: string
+                required: false
+                hint: For people using screen readers, e.g. "Three amber skincare bottles with cream labels". Up to 200 characters.
+                pattern: ['^.{0,200}$', 'Keep this under 200 characters']
+              - name: project
+                label: Link to a project (optional)
+                widget: relation
+                collection: projects
+                value_field: "{{slug}}"
+                search_fields: [title]
+                display_fields: [title]
+                required: false
+                hint: Adds a "View project" link under the image.
+
+  # ---------------------------------------------------------------- Projects
+  - name: projects
+    label: Projects
+    label_singular: Project
+    description: Each project gets its own page, like a Behance case study. Build it from blocks (text, images, image grids, process stages, quotes, videos) in any order.
+    folder: portfolio/graphic-design/content/projects
+    extension: json
+    format: json
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    identifier_field: title
+    summary: "{{title}}"
+    sortable_fields: [order, title, year]
+    view_filters:
+      - { label: On the homepage, field: featured, pattern: true }
+      - { label: Drafts, field: draft, pattern: true }
+    fields:
+      - name: title
+        label: Project title
+        widget: string
+        hint: e.g. "Ògo Skincare label system". Up to 90 characters. This also becomes the page address, so choose it before the first publish.
+        pattern: ['^.{2,90}$', 'Use between 2 and 90 characters']
+      - name: summary
+        label: One-line summary
+        widget: text
+        required: false
+        hint: Shown on the project card and at the top of the page. One or two sentences, up to 220 characters.
+        pattern: ['^[\s\S]{0,220}$', 'Keep the summary under 220 characters']
+      - name: cover
+        label: Cover image
+        widget: image
+        required: false
+        choose_url: false
+        hint: Used on the project card (cropped to 4:3) and at the top of the page (shown whole). If empty, the first image in the project is used.
+      - name: cover_focus
+        label: Keep this part of the cover in view when cropped
+        widget: select
+        default: center
+        options: [{ label: Top, value: top }, { label: Middle, value: center }, { label: Bottom, value: bottom }]
+      - name: category
+        label: Type of work
+        widget: select
+        required: false
+        options: [Brand identity, Packaging, Flyers and posters, Social media, Print and signage, Illustration, Web and digital, Other]
+      - { name: year, label: Year, widget: string, required: false, pattern: ['^(\d{4}(\s?[–-]\s?\d{4})?)?$', 'Use a year like 2025 or a range like 2024-2025'] }
+      - { name: client, label: Client, widget: string, required: false, hint: Leave empty for personal projects., pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+      - { name: role, label: My role, widget: string, required: false, hint: e.g. "Lead designer" or "Packaging design". Up to 60 characters., pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+      - { name: tools, label: Tools used, widget: list, required: false, max: 10, hint: Separate with commas, e.g. Illustrator, Photoshop }
+      - { name: featured, label: Show on the homepage, widget: boolean, default: true }
+      - { name: order, label: Position on the homepage, widget: number, value_type: int, min: 1, max: 999, default: 10, hint: 1 shows first. Projects with the same number are sorted newest first. }
+      - { name: draft, label: Hide this project (draft), widget: boolean, default: false, required: false, hint: Turn on to keep working on it without it appearing on the site. }
+      - name: blocks
+        label: Page content
+        label_singular: block
+        widget: list
+        required: false
+        max: 60
+        hint: Add blocks in the order they should appear. Use "Process stage" blocks to show how the project developed; they become a step-by-step guide beside the page.
+        types:
+          - name: text
+            label: Text
+            widget: object
+            summary: "Text: {{fields.heading}}"
+            fields:
+              - { name: heading, label: Heading (optional), widget: string, required: false, pattern: ['^.{0,80}$', 'Up to 80 characters'] }
+              - { name: body, label: Text, widget: text, required: false, hint: Leave a blank line between paragraphs. Up to 3000 characters., pattern: ['^[\s\S]{0,3000}$', 'Up to 3000 characters'] }
+          - name: stage
+            label: Process stage
+            widget: object
+            summary: "Stage: {{fields.stage}} {{fields.label}}"
+            fields:
+              - name: stage
+                label: Stage
+                widget: select
+                default: inspiration
+                options:
+                  - { label: Inspiration, value: inspiration }
+                  - { label: Research, value: research }
+                  - { label: Design, value: design }
+                  - { label: Client feedback, value: feedback }
+                  - { label: Revisions, value: revisions }
+                  - { label: Final delivery, value: final }
+                  - { label: Something else (use the custom name below), value: custom }
+              - { name: label, label: Custom name (optional), widget: string, required: false, hint: Replaces the stage name, e.g. "Second round of feedback". Up to 40 characters., pattern: ['^.{0,40}$', 'Up to 40 characters'] }
+              - { name: body, label: What happened at this stage, widget: text, required: false, hint: Then add image blocks below it to show the work from this stage., pattern: ['^[\s\S]{0,1200}$', 'Up to 1200 characters'] }
+          - name: image
+            label: Image
+            widget: object
+            summary: "Image: {{fields.caption}}"
+            fields:
+              - { name: image, label: Image, widget: image, choose_url: false }
+              - { name: size, label: Width on the page, widget: select, default: wide, options: [{ label: Full width, value: full }, { label: Wide, value: wide }, { label: Same width as the text, value: normal }] }
+              - { name: caption, label: Caption (optional), widget: string, required: false, pattern: ['^.{0,200}$', 'Up to 200 characters'] }
+              - { name: alt, label: Describe the image (optional), widget: string, required: false, hint: For screen readers., pattern: ['^.{0,200}$', 'Up to 200 characters'] }
+          - name: gallery
+            label: Image grid
+            widget: object
+            summary: "Image grid: {{fields.caption}}"
+            fields:
+              - { name: columns, label: Images per row, widget: select, default: "2", options: ["2", "3"], hint: On phones the images stack in one column. }
+              - name: images
+                label: Images
+                label_singular: image
+                widget: list
+                min: 1
+                max: 12
+                summary: "{{fields.alt}}"
+                fields:
+                  - { name: image, label: Image, widget: image, choose_url: false }
+                  - { name: alt, label: Describe the image (optional), widget: string, required: false, pattern: ['^.{0,200}$', 'Up to 200 characters'] }
+              - { name: caption, label: Caption (optional), widget: string, required: false, pattern: ['^.{0,200}$', 'Up to 200 characters'] }
+          - name: quote
+            label: Client quote
+            widget: object
+            summary: "Quote: {{fields.name}}"
+            fields:
+              - { name: text, label: Quote, widget: text, hint: Only use real quotes, with the client's permission. Up to 400 characters., pattern: ['^[\s\S]{1,400}$', 'Between 1 and 400 characters'] }
+              - { name: name, label: Name, widget: string, required: false, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+              - { name: role, label: Role and company, widget: string, required: false, pattern: ['^.{0,80}$', 'Up to 80 characters'] }
+          - name: video
+            label: Video
+            widget: object
+            summary: "Video: {{fields.caption}}"
+            fields:
+              - { name: url, label: YouTube or Vimeo link, widget: string, pattern: ['^https?://(www\.)?(youtube\.com|youtu\.be|vimeo\.com)/.+', 'Paste a YouTube or Vimeo link'] }
+              - { name: caption, label: Caption (optional), widget: string, required: false, pattern: ['^.{0,200}$', 'Up to 200 characters'] }
+
+  # ---------------------------------------------------------------- Text and links
+  - name: settings
+    label: Text and links
+    description: Your name, introduction, the two ways to work with you, your process, about section, contact details and social links.
+    files:
+      - name: site
+        label: Homepage text, contact and social links
+        file: portfolio/graphic-design/content/site.json
+        format: json
+        fields:
+          - { name: name, label: Your name, widget: string, pattern: ['^.{2,60}$', 'Between 2 and 60 characters'] }
+          - { name: role, label: What you do, widget: string, hint: e.g. "Graphic designer", pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+          - { name: location, label: Where you're based, widget: string, required: false, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+          - { name: intro, label: Introduction, widget: text, hint: One or two sentences beside your name. Up to 280 characters., pattern: ['^[\s\S]{0,280}$', 'Up to 280 characters'] }
+          - name: availability
+            label: Availability
+            widget: object
+            collapsed: false
+            fields:
+              - { name: full_time, label: Open to full-time or contract roles, widget: boolean, default: true, hint: Turn off to hide the "Join your team" card. }
+              - { name: full_time_note, label: Text shown when open to roles, widget: string, pattern: ['^.{0,70}$', 'Up to 70 characters'] }
+              - { name: freelance, label: Taking freelance projects, widget: boolean, default: true, hint: Turn off to hide the "Hire me for a project" card. }
+              - { name: freelance_note, label: Text shown when taking projects, widget: string, pattern: ['^.{0,70}$', 'Up to 70 characters'] }
+          - name: hire
+            label: For companies hiring (Join your team)
+            widget: object
+            collapsed: true
+            fields:
+              - { name: heading, label: Heading, widget: string, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+              - { name: body, label: Text, widget: text, hint: What kind of role you want and what you bring. No need to mention salary. Up to 600 characters., pattern: ['^[\s\S]{0,600}$', 'Up to 600 characters'] }
+              - { name: cv, label: CV (PDF), widget: file, required: false, choose_url: false, hint: Adds a "Download my CV" button. }
+              - { name: button, label: Button text, widget: string, pattern: ['^.{1,30}$', 'Up to 30 characters'] }
+          - name: freelance
+            label: For freelance clients (Hire me for a project)
+            widget: object
+            collapsed: true
+            fields:
+              - { name: heading, label: Heading, widget: string, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+              - { name: body, label: Text, widget: text, pattern: ['^[\s\S]{0,600}$', 'Up to 600 characters'] }
+              - { name: services, label: Services, widget: list, max: 12, hint: Separate with commas, e.g. Brand identity, Packaging, Flyers }
+              - { name: button, label: Button text, widget: string, pattern: ['^.{1,30}$', 'Up to 30 characters'] }
+          - name: process
+            label: How I work (process)
+            widget: object
+            collapsed: true
+            fields:
+              - { name: heading, label: Heading, widget: string, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+              - { name: intro, label: Introduction, widget: text, required: false, pattern: ['^[\s\S]{0,400}$', 'Up to 400 characters'] }
+              - name: steps
+                label: Steps
+                label_singular: step
+                widget: list
+                min: 2
+                max: 6
+                summary: "{{fields.title}}"
+                hint: Between 3 and 5 steps reads best.
+                fields:
+                  - { name: title, label: Step name, widget: string, pattern: ['^.{1,40}$', 'Up to 40 characters'] }
+                  - { name: body, label: Description, widget: text, required: false, pattern: ['^[\s\S]{0,260}$', 'Up to 260 characters'] }
+                  - { name: loops_back, label: This step sends the work back to the step before it, widget: boolean, default: false, required: false, hint: Turn on for "Client feedback" to draw the loop back to "Design". }
+              - { name: loop_label, label: Text on the loop arrow, widget: string, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+          - name: about
+            label: About me
+            widget: object
+            collapsed: true
+            fields:
+              - { name: heading, label: Heading, widget: string, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+              - { name: photo, label: Your photo, widget: image, required: false, choose_url: false, hint: Shown in black and white, cropped to a portrait shape. }
+              - { name: body, label: About you, widget: text, hint: Leave a blank line between paragraphs. Up to 1500 characters., pattern: ['^[\s\S]{0,1500}$', 'Up to 1500 characters'] }
+              - { name: tools, label: Tools, widget: list, required: false, max: 20, hint: Separate with commas. }
+              - name: experience
+                label: Experience
+                label_singular: job
+                widget: list
+                required: false
+                max: 12
+                summary: "{{fields.role}}, {{fields.company}}"
+                hint: Optional, but recruiters look for it.
+                fields:
+                  - { name: role, label: Job title, widget: string, pattern: ['^.{0,80}$', 'Up to 80 characters'] }
+                  - { name: company, label: Company, widget: string, required: false, pattern: ['^.{0,80}$', 'Up to 80 characters'] }
+                  - { name: years, label: Dates, widget: string, required: false, hint: e.g. "2023 to now", pattern: ['^.{0,40}$', 'Up to 40 characters'] }
+                  - { name: note, label: One line about it (optional), widget: string, required: false, pattern: ['^.{0,200}$', 'Up to 200 characters'] }
+          - name: testimonials
+            label: Client quotes
+            label_singular: quote
+            widget: list
+            required: false
+            max: 6
+            summary: "{{fields.name}}"
+            hint: The section only appears once you add a quote. Real quotes only.
+            fields:
+              - { name: quote, label: Quote, widget: text, pattern: ['^[\s\S]{1,320}$', 'Up to 320 characters'] }
+              - { name: name, label: Name, widget: string, pattern: ['^.{1,60}$', 'Up to 60 characters'] }
+              - { name: role, label: Role and company, widget: string, required: false, pattern: ['^.{0,80}$', 'Up to 80 characters'] }
+          - name: contact
+            label: Contact
+            widget: object
+            collapsed: true
+            fields:
+              - { name: heading, label: Heading, widget: string, pattern: ['^.{0,60}$', 'Up to 60 characters'] }
+              - { name: body, label: Text, widget: text, required: false, pattern: ['^[\s\S]{0,300}$', 'Up to 300 characters'] }
+              - { name: email, label: Email address, widget: string, pattern: ['^[^\s@]+@[^\s@]+\.[^\s@]+$', 'Enter a valid email address'] }
+              - { name: whatsapp, label: WhatsApp number (optional), widget: string, required: false, hint: With country code, e.g. 2348012345678. }
+              - { name: formspree_id, label: Formspree form ID (optional), widget: string, required: false, hint: Leave empty to receive messages through Netlify Forms (Netlify site settings, Forms). }
+          - name: social
+            label: Social links
+            widget: object
+            collapsed: false
+            hint: Paste the full link or just your username. Empty links are hidden.
+            fields:
+              - { name: linkedin, label: LinkedIn, widget: string, required: false }
+              - { name: instagram, label: Instagram, widget: string, required: false }
+              - { name: behance, label: Behance, widget: string, required: false }
+          - name: seo
+            label: Search and sharing
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Browser tab and Google title, widget: string, pattern: ['^.{0,70}$', 'Up to 70 characters'] }
+              - { name: description, label: Google description, widget: text, pattern: ['^[\s\S]{0,170}$', 'Up to 170 characters'] }
+              - { name: share_image, label: Image shown when your link is shared, widget: image, required: false, choose_url: false, hint: 1200 × 630 pixels works best. }
+          - { name: image_cdn, label: Resize images automatically on Netlify, widget: boolean, default: true, hint: Keep this on. It makes large uploads load fast. }

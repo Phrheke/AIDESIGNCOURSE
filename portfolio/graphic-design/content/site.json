@@ -1,0 +1,89 @@
+{
+  "name": "Ndifreke Akpan",
+  "role": "Graphic designer",
+  "location": "Nigeria",
+  "intro": "I design brand identities, packaging, flyers and social content that make businesses look as good as they are.",
+  "availability": {
+    "full_time": true,
+    "full_time_note": "Open to full-time and contract roles",
+    "freelance": true,
+    "freelance_note": "Taking freelance projects"
+  },
+  "hire": {
+    "heading": "Join your team",
+    "body": "I'm open to full-time and contract design roles, remote or on-site. I can own a brand day to day, keep a busy content calendar looking consistent, and work closely with marketing and product teams.",
+    "cv": "",
+    "button": "Talk about a role"
+  },
+  "freelance": {
+    "heading": "Hire me for a project",
+    "body": "Need something designed without hiring full-time? I take on projects with a clear brief, a fixed quote and an agreed deadline.",
+    "services": [
+      "Brand identity and logos",
+      "Packaging and labels",
+      "Flyers and posters",
+      "Social media design",
+      "Print and signage"
+    ],
+    "button": "Start a project"
+  },
+  "process": {
+    "heading": "How I work",
+    "intro": "Every project follows the same loop. Feedback isn't the end of the process, it's what sends the work back for another, better round.",
+    "steps": [
+      {
+        "title": "Inspiration",
+        "body": "I study the brief, the audience and what's around them, and collect references before I draw anything.",
+        "loops_back": false
+      },
+      {
+        "title": "Design",
+        "body": "I sketch, build directions and turn the strongest ideas into real layouts and mockups.",
+        "loops_back": false
+      },
+      {
+        "title": "Client feedback",
+        "body": "You see the work and tell me what's working and what isn't. Every note gets an answer.",
+        "loops_back": true
+      },
+      {
+        "title": "Final delivery",
+        "body": "Once it's right, you get every file you need, ready for print, web and social.",
+        "loops_back": false
+      }
+    ],
+    "loop_label": "Back to design for another round"
+  },
+  "about": {
+    "heading": "About me",
+    "photo": "/uploads/portrait.webp",
+    "body": "I'm Ndifreke Akpan, a graphic designer based in Nigeria. I work across brand identity, packaging, print and social media, for companies and for independent clients.\n\nI care about design that does a job: a label that stands out on a crowded shelf, a flyer that gets people to call, a brand that looks consistent everywhere it shows up.",
+    "tools": [
+      "Adobe Illustrator",
+      "Adobe Photoshop",
+      "Adobe InDesign",
+      "Figma",
+      "Canva"
+    ],
+    "experience": []
+  },
+  "testimonials": [],
+  "contact": {
+    "heading": "Let's talk",
+    "body": "Tell me about the role or the project. I'll reply within a day.",
+    "email": "hello@example.com",
+    "whatsapp": "",
+    "formspree_id": ""
+  },
+  "social": {
+    "linkedin": "",
+    "instagram": "",
+    "behance": ""
+  },
+  "seo": {
+    "title": "Ndifreke Akpan, graphic designer",
+    "description": "Graphic designer in Nigeria. Brand identity, packaging, flyers and social media design. Open to full-time roles and freelance projects.",
+    "share_image": ""
+  },
+  "image_cdn": true
+}

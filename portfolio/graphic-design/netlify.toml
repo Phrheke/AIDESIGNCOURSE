@@ -1,0 +1,15 @@
+# Netlify settings for the graphic design portfolio.
+# In Netlify, set "Base directory" to: portfolio/graphic-design
+[build]
+  command = "node scripts/build-content.mjs"
+  publish = "."
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/content/build/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

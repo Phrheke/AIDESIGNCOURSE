@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Project, Ndifreke Akpan</title>
+<meta name="description" content="A project by Ndifreke Akpan, graphic designer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="project">
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="wordmark" data-bind="name">Ndifreke Akpan</a>
+    <nav class="main-nav" aria-label="Main">
+      <a href="index.html#work">Work</a>
+      <a href="index.html#process">Process</a>
+      <a href="index.html#about">About</a>
+    </nav>
+    <a href="index.html#contact" class="btn btn-primary btn-sm">Get in touch</a>
+  </div>
+</header>
+
+<main id="project">
+  <section class="p-head">
+    <div class="wrap">
+      <a href="index.html#work" class="back-link">All projects</a>
+      <h1 id="p-title">Loading project</h1>
+      <p class="lead" id="p-summary"></p>
+      <dl class="p-facts" id="p-facts"></dl>
+    </div>
+  </section>
+
+  <div class="wrap wrap-wide">
+    <figure class="p-cover" id="p-cover"></figure>
+  </div>
+
+  <div class="wrap p-layout" id="p-layout">
+    <nav class="p-rail" id="p-rail" aria-label="Project stages" hidden>
+      <p class="p-rail-title">Process</p>
+      <ol id="p-rail-list"></ol>
+    </nav>
+    <article class="p-blocks" id="p-blocks"></article>
+  </div>
+
+  <section class="p-next" id="p-next" hidden>
+    <div class="wrap p-next-inner">
+      <div>
+        <p class="next-label">Next project</p>
+        <a href="#" class="next-link" id="p-next-link"></a>
+      </div>
+      <div class="p-next-cta">
+        <p>Like what you see?</p>
+        <a href="index.html#contact" class="btn btn-primary">Get in touch</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p>© <span id="year">2026</span> <span data-bind="name">Ndifreke Akpan</span></p>
+    <ul class="social social-footer" id="footer-social"></ul>
+  </div>
+</footer>
+
+<dialog class="lightbox" id="lightbox" aria-label="Image viewer">
+  <div class="lb-stage">
+    <img class="lb-img" id="lb-img" alt="">
+  </div>
+  <div class="lb-bar">
+    <p class="lb-caption" id="lb-caption"></p>
+    <p class="lb-count" id="lb-count"></p>
+    <a class="lb-project" id="lb-project" href="#" hidden>View project</a>
+  </div>
+  <button type="button" class="lb-btn lb-prev" id="lb-prev" aria-label="Previous image"></button>
+  <button type="button" class="lb-btn lb-next" id="lb-next" aria-label="Next image"></button>
+  <button type="button" class="lb-close" id="lb-close">Close</button>
+</dialog>
+
+<script src="js/app.js"></script>
+</body>
+</html>

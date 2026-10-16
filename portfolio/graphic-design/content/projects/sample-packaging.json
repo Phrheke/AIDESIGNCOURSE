@@ -1,0 +1,111 @@
+{
+  "title": "Sample packaging project",
+  "category": "Packaging",
+  "year": "2025",
+  "client": "Client name",
+  "role": "Design lead",
+  "tools": [
+    "Illustrator",
+    "Photoshop"
+  ],
+  "summary": "Replace this with one line about the project and what it achieved.",
+  "cover": "/uploads/sample-project-2-cover.svg",
+  "cover_focus": "center",
+  "featured": true,
+  "order": 2,
+  "blocks": [
+    {
+      "type": "text",
+      "heading": "The brief",
+      "body": "Replace this with what the client needed and why. Two or three sentences is enough: who the client is, what problem the design had to solve, and any constraints like budget, deadline or existing brand rules."
+    },
+    {
+      "type": "stage",
+      "stage": "inspiration",
+      "label": "",
+      "body": "Where the idea started. Show the references, moodboards or observations that shaped the direction. You don't need to name your sources."
+    },
+    {
+      "type": "image",
+      "image": "/uploads/sample-project-2-1.svg",
+      "alt": "Moodboard placeholder",
+      "caption": "Moodboard",
+      "size": "wide"
+    },
+    {
+      "type": "stage",
+      "stage": "design",
+      "label": "",
+      "body": "First sketches and directions. Explain which idea you chose to develop and why."
+    },
+    {
+      "type": "gallery",
+      "images": [
+        {
+          "image": "/uploads/sample-project-2-2.svg",
+          "alt": "Sketches placeholder"
+        },
+        {
+          "image": "/uploads/sample-project-2-3.svg",
+          "alt": "First draft placeholder"
+        }
+      ],
+      "columns": "2",
+      "caption": "Sketches and the first draft"
+    },
+    {
+      "type": "stage",
+      "stage": "feedback",
+      "label": "",
+      "body": "What the client said, and what you changed because of it."
+    },
+    {
+      "type": "gallery",
+      "images": [
+        {
+          "image": "/uploads/sample-project-2-4.svg",
+          "alt": "Client notes placeholder"
+        },
+        {
+          "image": "/uploads/sample-project-2-5.svg",
+          "alt": "Revised design placeholder"
+        }
+      ],
+      "columns": "2",
+      "caption": "Client notes, then the revised version"
+    },
+    {
+      "type": "stage",
+      "stage": "final",
+      "label": "",
+      "body": "The finished work and where it's used."
+    },
+    {
+      "type": "image",
+      "image": "/uploads/sample-project-2-6.svg",
+      "alt": "Final design placeholder",
+      "caption": "",
+      "size": "full"
+    },
+    {
+      "type": "gallery",
+      "images": [
+        {
+          "image": "/uploads/sample-project-2-7.svg",
+          "alt": "Application placeholder"
+        },
+        {
+          "image": "/uploads/sample-project-2-8.svg",
+          "alt": "Application placeholder"
+        }
+      ],
+      "columns": "2",
+      "caption": ""
+    },
+    {
+      "type": "text",
+      "heading": "The result",
+      "body": "What happened after launch, in plain numbers if you have them and the client agrees to share them."
+    }
+  ]
+}
