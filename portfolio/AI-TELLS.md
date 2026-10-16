@@ -81,7 +81,7 @@ An automated scan of the first version found 20 tells. After the rebuild it find
 | Tell found | Graphic design site now | Video site now |
 |---|---|---|
 | Near-black + one accent (video) | — | Mid-grey editing-suite panels, with the blue of YouTube Studio's retention graph as the only accent |
-| Cobalt/indigo accent (design) | Lagos danfo-bus yellow, used only for things you can click | — |
+| Cobalt/indigo accent (design) | Danfo-bus yellow, used only for things you can click | — |
 | ALL-CAPS mono labels, "A · B · C" lines | Removed. Plain sentence-case text, one typeface | Removed. Timecodes use the same font with even-width numbers |
 | One coloured headline word | Whole headline carries the idea | Whole headline carries the idea |
 | 01/02/03 numbering | Only on the real process, written as days | Only on the real process, written as days |
@@ -99,14 +99,13 @@ An automated scan of the first version found 20 tells. After the rebuild it find
 Following the rule from Anthropic's frontend-design skill (*"motion that answers a person's action is welcome when it shows what changed"*) and UI UX Pro Max's guidelines (animate 1–2 key elements per view, ease-out, use transform and opacity, never loop decoration, respect reduced motion).
 
 **Graphic design site**
-- On load, once: the headline sets line by line and the flyer feeds in from the top, like a print coming out.
-- The before/after line sweeps once when it first comes into view, to show it can be dragged. It stops as soon as you touch it.
-- Filtering projects: cards slide to their new places instead of jumping (View Transitions).
-- Opening the case study: the flyer stays in place and grows into the case-study page (cross-page View Transition, Chrome and Edge).
+- On load, once: your name rises in and the gallery images settle in one after another.
+- Gallery and project images open in a full-screen viewer with arrows, swipe and keyboard, and slide between images.
+- The process loop arrow draws once when it scrolls into view, and highlights when you hover the feedback step.
+- On project pages, the step guide beside the page follows the stage you're reading.
 - A yellow marker under the nav follows the section you're reading.
-- "Ask about…" links fill in the form, and the field flashes so you see it was filled.
+- "Talk about a role" and "Start a project" fill in the form's first question, and the field flashes so you see it changed. The message label changes to match.
 - Form: errors slide open under the field you left, the button shows a spinner while sending, and the form shrinks into a "Sent" message.
-- FAQ answers open smoothly. Case study pins and list items highlight each other.
 
 **Video site**
 - Raw vs edited wipe (drag, tap or use arrow keys). It sweeps once on first view. With real clips added, both play in sync.

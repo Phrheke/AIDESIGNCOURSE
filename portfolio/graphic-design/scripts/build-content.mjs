@@ -236,7 +236,9 @@ const projects = files.map(f => {
         return null;
     }
   }).filter(Boolean);
-  const cover = image(p.cover, `${rel} cover`) || blocks.find(b => b.type === 'image')?.image || blocks.find(b => b.type === 'gallery')?.images[0].image || null;
+  const ownCover = image(p.cover, `${rel} cover`);
+  const firstImage = [...blocks.filter(b => b.type === 'image').map(b => b.image), ...blocks.filter(b => b.type === 'gallery').flatMap(b => b.images.map(g => g.image))].find(img => !img.missing);
+  const cover = ownCover && !ownCover.missing ? ownCover : firstImage || ownCover || null;
   if (!cover) warn(`${rel} has no cover image`);
   return {
     slug,

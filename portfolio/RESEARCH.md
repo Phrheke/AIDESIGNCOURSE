@@ -32,9 +32,9 @@ A note on evidence: almost nothing about portfolios has been measured in control
 - Each case study follows the same shape: **brief → problem → your role → process / key decisions → final work → outcome** **[consensus]**. Two or three short paragraphs plus images is enough.
 - The process (sketches, rejected directions, the system behind the logo) is what most portfolios leave out and what clients use to judge how you think **[consensus]**. A red flag for clients: "no explanation of process or results, just pretty pictures."
 - Show systems, not single pieces: logo + palette + type + real mockups; a full social campaign rather than 30 unrelated posts **[consensus]**.
-- Use a consistent format across case studies, and specific titles ("Mo's World of Scents: launch flyer redesign"), never "Project 3" **[consensus]**.
+- Use a consistent format across case studies, and specific titles ("Ògo Skincare label system"), never "Project 3" **[consensus]**.
 
-**What the sites do about it**: The graphic design site opens with a draggable before/after of a real redesign, and has a full case-study page template (`work/mos-world-of-scents.html`) with those sections in that order. Every project has a one-line result under it.
+**What the sites do about it**: The graphic design site opens with a gallery of your best work. Each project page is built from blocks in the admin, with process stages (inspiration, design, client feedback, revisions, final) so clients and employers can see how you think.
 
 ## 4. For video: reel first, short, sound-off friendly, and prove results
 

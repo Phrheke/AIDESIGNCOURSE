@@ -138,17 +138,17 @@
               <option value="project">A freelance project</option>
               <option value="other">Something else</option>
             </select>
-            <p class="field-error" id="f-intent-err">Pick the closest option.</p>
+            <p class="field-error" id="f-intent-err"><span>Pick the closest option.</span></p>
           </div>
           <div class="field">
             <label for="f-name">Your name</label>
             <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" aria-describedby="f-name-err">
-            <p class="field-error" id="f-name-err">Add your name so I know who to reply to.</p>
+            <p class="field-error" id="f-name-err"><span>Add your name so I know who to reply to.</span></p>
           </div>
           <div class="field">
             <label for="f-email">Email</label>
             <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" aria-describedby="f-email-err">
-            <p class="field-error" id="f-email-err">Enter an email like name@company.com.</p>
+            <p class="field-error" id="f-email-err"><span>Enter an email like name@company.com.</span></p>
           </div>
           <div class="field" id="f-company-field" hidden>
             <label for="f-company">Company <span class="optional">(optional)</span></label>
@@ -157,7 +157,7 @@
           <div class="field">
             <label for="f-msg" id="f-msg-label">Message</label>
             <textarea id="f-msg" name="message" rows="5" required maxlength="4000" aria-describedby="f-msg-err"></textarea>
-            <p class="field-error" id="f-msg-err">Add a sentence or two so I can reply properly.</p>
+            <p class="field-error" id="f-msg-err"><span>Add a sentence or two so I can reply properly.</span></p>
           </div>
           <button type="submit" class="btn btn-primary btn-block" id="f-submit"><span class="btn-label">Send message</span><span class="spinner" aria-hidden="true"></span></button>
           <p class="form-status" id="form-status" role="status" aria-live="polite"></p>

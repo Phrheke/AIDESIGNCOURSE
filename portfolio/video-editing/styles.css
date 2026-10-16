@@ -276,6 +276,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(62,166,255,.3);}
 .field-error{display:grid;grid-template-rows:0fr;font-size:var(--t-small);color:#FF8A8D;font-weight:500;opacity:0;overflow:hidden;transition:grid-template-rows var(--d-med) var(--ease-out), opacity var(--d-med) var(--ease-out);}
 .field.has-error .field-error{grid-template-rows:1fr;opacity:1;}
+.field-error > span{min-height:0;overflow:hidden;}
 .field.has-error input,.field.has-error select,.field.has-error textarea{border-color:var(--cut);}
 .field.is-filled select{animation:filled 900ms var(--ease-out);}
 @keyframes filled{0%{box-shadow:0 0 0 0 rgba(62,166,255,.6);}25%{box-shadow:0 0 0 4px rgba(62,166,255,.6);}100%{box-shadow:0 0 0 0 transparent;}}
