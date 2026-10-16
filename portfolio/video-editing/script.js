@@ -62,49 +62,38 @@ if (ba) {
     io.observe(ba);
   }
 
-  // Real footage: two muted clips of the same moment, kept in sync under the wipe.
-  const rawSrc = ba.dataset.rawSrc, editSrc = ba.dataset.editSrc;
-  if (rawSrc && editSrc) {
-    const btn = document.querySelector('.play-both');
-    btn.hidden = false;
-    // The drawn sample frame stays until both clips can play, so a missing file never leaves a black box.
-    const make = (src, poster, layer) => {
-      const v = document.createElement('video');
-      // Use the MP4 where it plays (Safari, Chrome, Edge); fall back to a .webm with the same name.
-      const mp4ok = v.canPlayType('video/mp4; codecs="avc1.42E01E"');
-      const chosen = !mp4ok && /\.mp4$/i.test(src) ? src.replace(/\.mp4$/i, '.webm') : src;
-      Object.assign(v, { src: chosen, muted: true, loop: true, playsInline: true, preload: 'auto' });
-      if (poster) v.poster = poster;
-      v.setAttribute('aria-hidden', 'true');
-      v.setAttribute('muted', '');
-      layer.prepend(v);
-      return v;
-    };
-    const raw = make(rawSrc, ba.dataset.rawPoster, ba.querySelector('.ba-raw'));
-    const edit = make(editSrc, ba.dataset.editPoster, ba.querySelector('.ba-edit'));
-    let ready = 0;
-    const onReady = () => {
-      if (++ready < 2) return;
-      ba.querySelectorAll('.ba-layer > svg').forEach(svg => svg.remove());
-      ba.classList.add('has-video');
-    };
-    const onFail = () => { raw.remove(); edit.remove(); btn.hidden = true; };
-    raw.addEventListener('loadeddata', onReady, { once: true });
-    edit.addEventListener('loadeddata', onReady, { once: true });
-    raw.addEventListener('error', onFail, { once: true });
-    edit.addEventListener('error', onFail, { once: true });
+  // Two muted clips of the same moment, kept in sync under the wipe.
+  const raw = ba.querySelector('.clip-raw'), edit = ba.querySelector('.clip-edit');
+  const btn = document.querySelector('.play-both');
+  const big = ba.querySelector('.big-play');
+  if (raw && edit) {
+    const both = [raw, edit];
     const setPlaying = on => {
-      btn.setAttribute('aria-pressed', on);
+      btn.setAttribute('aria-pressed', String(on));
       btn.textContent = on ? 'Pause' : 'Play both';
+      ba.classList.toggle('is-paused', !on);
     };
-    btn.addEventListener('click', () => {
-      if (raw.paused) { raw.play(); edit.play(); setPlaying(true); }
-      else { raw.pause(); edit.pause(); setPlaying(false); }
-    });
+    const play = () => Promise.all(both.map(v => v.play())).then(() => setPlaying(true)).catch(() => setPlaying(false));
+    const pause = () => { both.forEach(v => v.pause()); setPlaying(false); };
+    btn.addEventListener('click', () => (raw.paused ? play() : pause()));
+    big.addEventListener('pointerdown', e => e.stopPropagation());
+    big.addEventListener('click', e => { e.stopPropagation(); play(); });
+    // Keep the edit in step with the raw clip. Small drift is fixed by speeding up or slowing down the edit
+    // a little (works on any host); a big jump is only attempted where the browser can seek.
     raw.addEventListener('timeupdate', () => {
-      if (Math.abs(edit.currentTime - raw.currentTime) > 0.12) edit.currentTime = raw.currentTime;
+      if (raw.paused || edit.seeking) return;
+      const d = raw.duration || 0;
+      let drift = raw.currentTime - edit.currentTime;
+      if (d && Math.abs(drift) > d / 2) drift -= Math.sign(drift) * d; // across the loop point
+      if (Math.abs(drift) > 1 && edit.seekable.length && edit.seekable.end(0) > raw.currentTime) edit.currentTime = raw.currentTime;
+      else edit.playbackRate = Math.abs(drift) < 0.05 ? 1 : Math.min(1.5, Math.max(0.66, 1 + drift));
     });
-    if (!reduceMotion) { raw.play().then(() => { edit.play(); setPlaying(true); }).catch(() => {}); }
+    raw.addEventListener('pause', () => setPlaying(false));
+    raw.addEventListener('playing', () => setPlaying(true));
+    setPlaying(false);
+    // Browsers may refuse to start video on their own (Low Power Mode, data saver). The play button then stays visible.
+    if (reduceMotion) both.forEach(v => { v.removeAttribute('autoplay'); v.pause(); });
+    else play();
   }
 }
 

@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>yourname, video editor for YouTube creators</title>
+<title>Ndifreke Akpan, video editor for YouTube creators</title>
 <meta name="description" content="Retention-focused editing for YouTube creators and brands. Compare raw footage with the edit, then get a free test edit of your first minute.">
-<meta property="og:title" content="yourname, video editor for YouTube creators">
+<meta property="og:title" content="Ndifreke Akpan, video editor for YouTube creators">
 <meta property="og:description" content="Compare raw footage with the edit. First cut in 72 hours, free test edit of your first minute.">
 <meta name="theme-color" content="#1E2024">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
 
 <header class="site-header">
   <div class="wrap header-inner">
-    <a href="#top" class="wordmark">yourname</a>
+    <a href="#top" class="wordmark">Ndifreke Akpan</a>
     <nav class="main-nav" aria-label="Main">
       <a href="#compare">Raw vs edit</a>
       <a href="#work">Work</a>
@@ -49,46 +49,28 @@
 
       <div class="compare">
         <div class="viewer">
-          <!--
-            Raw vs edited wipe.
-            Two muted clips of the same moment play in sync under the wipe. The ones in assets/ are samples:
-            export your own 6–10 second moment twice (raw from the camera, and finished), same length, 1280×720,
-            and replace sample-raw.mp4 and sample-edit.mp4 (and their -poster.jpg stills).
-          -->
-          <div class="ba" data-ba data-raw-src="assets/sample-raw.mp4" data-edit-src="assets/sample-edit.mp4" data-raw-poster="assets/sample-raw-poster.jpg" data-edit-poster="assets/sample-edit-poster.jpg" style="--pos:50%">
+          <!-- Raw vs edited: two muted clips of the same moment, kept in sync. Replace the sample files in assets/ with your own (same names). -->
+          <div class="ba" data-ba style="--pos:50%">
             <div class="ba-layer ba-raw">
-              <svg class="scene" viewBox="0 0 1280 720" aria-hidden="true" focusable="false">
-                <g class="scene-shot" id="shot-def">
-                  <rect width="1280" height="720" fill="#5B6B78"/>
-                  <rect y="520" width="1280" height="200" fill="#3E3A36"/>
-                  <rect x="80" y="150" width="300" height="14" fill="#8A6E52"/>
-                  <rect x="96" y="96" width="22" height="54" fill="#C9B79C"/><rect x="122" y="104" width="18" height="46" fill="#7C8C6A"/><rect x="144" y="90" width="26" height="60" fill="#A8564A"/><rect x="174" y="108" width="20" height="42" fill="#D8CFC0"/>
-                  <circle cx="1080" cy="300" r="120" fill="#E8C98E" opacity=".35"/>
-                  <rect x="1070" y="300" width="20" height="230" fill="#2E2A27"/>
-                  <path d="M1020 300 h120 l-30 -70 h-60z" fill="#D9B77A"/>
-                  <rect x="180" y="380" width="70" height="150" rx="10" fill="#4C5B3E"/>
-                  <ellipse cx="215" cy="360" rx="70" ry="60" fill="#5F7A4B"/>
-                  <path d="M450 720 C460 560 540 500 640 500 C740 500 820 560 830 720 Z" fill="#2B3A4F"/>
-                  <rect x="610" y="430" width="60" height="80" fill="#8B5E45"/>
-                  <ellipse cx="640" cy="360" rx="92" ry="110" fill="#9A6A4F"/>
-                  <path d="M548 340 C548 250 600 220 640 220 C690 220 735 250 732 330 C710 290 600 280 548 340Z" fill="#1E1A18"/>
-                  <rect x="860" y="470" width="26" height="120" rx="13" fill="#1C1C1C"/>
-                  <rect x="852" y="440" width="42" height="60" rx="21" fill="#2A2A2A"/>
-                </g>
-              </svg>
+              <video class="clip-raw" muted loop playsinline autoplay preload="auto" poster="assets/sample-raw-poster.jpg" aria-hidden="true">
+                <source src="assets/sample-raw.mp4" type="video/mp4">
+                <source src="assets/sample-raw.webm" type="video/webm">
+              </video>
             </div>
             <div class="ba-layer ba-edit">
-              <svg class="scene" viewBox="0 0 1280 720" aria-hidden="true" focusable="false"><use href="#shot-def"/></svg>
-              <p class="burn-caption"><span>This one habit costs you</span> <b>₦200,000 a year</b></p>
-              <p class="lower-third"><b>Tunde M.</b> The Money Desk</p>
+              <video class="clip-edit" muted loop playsinline autoplay preload="auto" poster="assets/sample-edit-poster.jpg" aria-hidden="true">
+                <source src="assets/sample-edit.mp4" type="video/mp4">
+                <source src="assets/sample-edit.webm" type="video/webm">
+              </video>
             </div>
+            <button type="button" class="big-play" aria-label="Play the raw and edited clips"><span></span></button>
             <span class="ba-tag ba-tag-raw">Raw footage</span>
             <span class="ba-tag ba-tag-edit">My edit</span>
             <span class="ba-handle" aria-hidden="true"><span></span></span>
             <input class="ba-range" type="range" min="0" max="100" value="50" step="1" aria-label="Compare raw footage and the edit. Move left to see more of the edit.">
           </div>
           <div class="viewer-bar">
-            <button type="button" class="play-both" hidden aria-pressed="false">Play both</button>
+            <button type="button" class="play-both" aria-pressed="false">Play both</button>
             <p class="viewer-note">Sample clip. Replace it with your own raw footage and your edit of it.</p>
           </div>
         </div>
@@ -283,7 +265,7 @@
         <div class="contact-copy">
           <h2>Get a free test edit</h2>
           <p>Send your channel and a sample. If we're a fit, I'll edit the first minute free so you can judge it before you pay anything.</p>
-          <p class="contact-alt">Prefer chatting? <a href="https://www.instagram.com/fr3k3h.exe/" target="_blank" rel="noopener me">Message me on Instagram</a>, or email <span class="email" id="email-text">hello@yourname.com</span> <button type="button" class="copy" id="copy-email">Copy</button></p>
+          <p class="contact-alt">Prefer chatting? <a href="https://www.instagram.com/fr3k3h.exe/" target="_blank" rel="noopener me">Message me on Instagram</a>.</p>
           <figure class="quote-small">
             <blockquote>“Never misses an upload day, and actually gets my sense of humour.”</blockquote>
             <figcaption>Amara O., Chef Amara, 640,000 subscribers</figcaption>
@@ -335,7 +317,7 @@
 
 <footer class="site-footer">
   <div class="wrap footer-inner">
-    <p>© <span id="year">2026</span> yourname</p>
+    <p>© <span id="year">2026</span> Ndifreke Akpan</p>
     <p><a href="https://www.instagram.com/fr3k3h.exe/" target="_blank" rel="noopener me">Instagram</a></p>
   </div>
 </footer>

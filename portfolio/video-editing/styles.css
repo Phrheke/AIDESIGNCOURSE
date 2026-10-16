@@ -103,7 +103,6 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* avoid-ai-design-ignore: K4 (a broadcast lower-third, part of the sample edit) */
 .lower-third{position:absolute;left:4%;bottom:28%;display:flex;flex-direction:column;background:rgba(10,12,16,.82);padding:6px 12px;border-left:3px solid var(--blue);font-size:clamp(0.7rem, 1.3vw, 0.95rem);line-height:1.3;color:var(--text-2);}
 .lower-third b{color:#fff;font-weight:700;}
-.ba.has-video .burn-caption,.ba.has-video .lower-third{display:none;}
 .ba-tag{position:absolute;top:12px;font-size:0.8125rem;font-weight:700;background:rgba(10,12,16,.8);color:var(--text);padding:4px 9px;border-radius:4px;pointer-events:none;transition:opacity var(--d-med) var(--ease-out);}
 .ba-tag-raw{left:12px;}
 .ba-tag-edit{right:12px;color:var(--blue);}
@@ -344,3 +343,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   .tabs{width:100%;}
   .tab{flex:1 1 auto;padding:0 10px;}
 }
+
+/* Big play button over the comparison, shown whenever the clips aren't playing */
+.big-play{position:absolute;z-index:4;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;border:0;background:var(--blue);color:var(--blue-ink);cursor:pointer;opacity:0;pointer-events:none;transform:scale(.9);transition:opacity var(--d-med) var(--ease-out), transform var(--d-med) var(--ease-out);box-shadow:0 0 0 10px rgba(62,166,255,.25);}
+.big-play span{position:absolute;left:50%;top:50%;transform:translate(-35%,-50%);border-style:solid;border-width:15px 0 15px 25px;border-color:transparent transparent transparent currentColor;}
+.ba.is-paused .big-play{opacity:1;pointer-events:auto;transform:none;}
+.ba.is-paused .ba-handle span{opacity:.0;}
