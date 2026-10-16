@@ -499,3 +499,49 @@ if (form) {
 
 const year = document.getElementById('year');
 if (year) year.textContent = new Date().getFullYear();
+
+// ---------- Scroll animations: headings rise word by word, panels and cards follow one another ----------
+(function initMotion() {
+  if (reduceMotion || !('IntersectionObserver' in window)) return;
+  document.documentElement.classList.add('js-motion');
+  const targets = [];
+  document.querySelectorAll('main h1, main h2').forEach(h => {
+    if (h.classList.contains('visually-hidden') || h.closest('.chart-card')) return;
+    const words = h.textContent.trim().split(/\s+/);
+    h.setAttribute('aria-label', words.join(' '));
+    h.textContent = '';
+    words.forEach((w, i) => {
+      const outer = document.createElement('span'); outer.className = 'w'; outer.style.setProperty('--wi', i);
+      const inner = document.createElement('span'); inner.textContent = w; inner.setAttribute('aria-hidden', 'true');
+      outer.append(inner); h.append(outer, i < words.length - 1 ? ' ' : '');
+    });
+    h.classList.add('split'); targets.push(h);
+  });
+  const groups = [
+    ['.hero-side > *', 'rv', 100], ['.viewer', 'rv-scale', 150], ['.changes li', 'rv', 80], ['.cut', 'rv', 0],
+    ['.result-copy > p, .result-copy > details', 'rv', 100], ['.chart-card', 'rv-scale', 100],
+    ['.vid', 'rv', 110], ['.prices-head p', 'rv', 0], ['.price-row', 'rv', 110], ['.track li', 'rv', 120], ['.tools', 'rv', 0],
+    ['.faq details', 'rv', 60], ['.quote-lead', 'rv', 0], ['.contact-copy > p, .quote-small', 'rv', 90], ['.contact-form', 'rv-scale', 150],
+  ];
+  groups.forEach(([sel, cls, step]) => {
+    const seen = new Map();
+    document.querySelectorAll(sel).forEach(n => {
+      const k = n.parentElement; const i = (seen.get(k) ?? -1) + 1; seen.set(k, i);
+      n.classList.add(cls); n.style.setProperty('--rd', `${i * step}ms`); targets.push(n);
+    });
+  });
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  targets.forEach(t => io.observe(t));
+  // Hidden tab panels: reveal their cards as soon as a tab is opened
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => setTimeout(() => document.querySelectorAll('.panel:not([hidden]) .vid').forEach(v => v.classList.add('in')), 30)));
+  // Depth: the hero's coloured light drifts slower than the page
+  const glows = [...document.querySelectorAll('.glow')];
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(() => { const y = scrollY; glows.forEach((g, i) => { g.style.transform = `translate3d(0, ${y * (0.15 + i * 0.07)}px, 0)`; }); ticking = false; });
+  };
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+})();
