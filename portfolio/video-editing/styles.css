@@ -94,7 +94,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .ba{position:relative;aspect-ratio:16/9;max-width:100%;overflow:hidden;border-radius:6px;background:#000;user-select:none;-webkit-user-select:none;touch-action:pan-y;}
 .ba-layer{position:absolute;inset:0;overflow:hidden;}
 .ba-layer > svg,.ba-layer > video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.ba-raw > svg,.ba-raw > video{filter:saturate(.32) contrast(.74) brightness(1.12);}
+.ba-raw > svg{filter:saturate(.32) contrast(.74) brightness(1.12);}
 .ba-edit{clip-path:inset(0 0 0 var(--pos));}
 .ba-edit > svg{transform:scale(1.14);transform-origin:50% 42%;filter:saturate(1.15) contrast(1.06);}
 .ba-edit > video{filter:none;}

@@ -65,20 +65,34 @@ if (ba) {
   // Real footage: two muted clips of the same moment, kept in sync under the wipe.
   const rawSrc = ba.dataset.rawSrc, editSrc = ba.dataset.editSrc;
   if (rawSrc && editSrc) {
-    const make = (src, layer) => {
+    const btn = document.querySelector('.play-both');
+    btn.hidden = false;
+    // The drawn sample frame stays until both clips can play, so a missing file never leaves a black box.
+    const make = (src, poster, layer) => {
       const v = document.createElement('video');
-      Object.assign(v, { src, muted: true, loop: true, playsInline: true, preload: 'auto' });
+      // Use the MP4 where it plays (Safari, Chrome, Edge); fall back to a .webm with the same name.
+      const mp4ok = v.canPlayType('video/mp4; codecs="avc1.42E01E"');
+      const chosen = !mp4ok && /\.mp4$/i.test(src) ? src.replace(/\.mp4$/i, '.webm') : src;
+      Object.assign(v, { src: chosen, muted: true, loop: true, playsInline: true, preload: 'auto' });
+      if (poster) v.poster = poster;
       v.setAttribute('aria-hidden', 'true');
-      layer.querySelector('svg')?.remove();
+      v.setAttribute('muted', '');
       layer.prepend(v);
       return v;
     };
-    const raw = make(rawSrc, ba.querySelector('.ba-raw'));
-    const edit = make(editSrc, ba.querySelector('.ba-edit'));
-    ba.classList.add('has-video');
-    document.querySelector('.viewer-note').textContent = 'The same moment, raw and edited, playing in sync.';
-    const btn = document.querySelector('.play-both');
-    btn.hidden = false;
+    const raw = make(rawSrc, ba.dataset.rawPoster, ba.querySelector('.ba-raw'));
+    const edit = make(editSrc, ba.dataset.editPoster, ba.querySelector('.ba-edit'));
+    let ready = 0;
+    const onReady = () => {
+      if (++ready < 2) return;
+      ba.querySelectorAll('.ba-layer > svg').forEach(svg => svg.remove());
+      ba.classList.add('has-video');
+    };
+    const onFail = () => { raw.remove(); edit.remove(); btn.hidden = true; };
+    raw.addEventListener('loadeddata', onReady, { once: true });
+    edit.addEventListener('loadeddata', onReady, { once: true });
+    raw.addEventListener('error', onFail, { once: true });
+    edit.addEventListener('error', onFail, { once: true });
     const setPlaying = on => {
       btn.setAttribute('aria-pressed', on);
       btn.textContent = on ? 'Pause' : 'Play both';

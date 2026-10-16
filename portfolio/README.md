@@ -71,7 +71,7 @@ python3 -m http.server 8000           # http://localhost:8000
 
 Edited directly in `video-editing/index.html` and `script.js`. Replace `yourname`, the email, WhatsApp link, Formspree ID (`YOUR_FORM_ID`) and social links, delete the grey template note, then:
 
-- [ ] **Raw vs edited clips** (the most important item): pick one 6–10 second moment. Export it twice at the same length, once straight from the camera and once finished (graded, reframed, captioned), both 1280×720 H.264, muted, under 2 MB each. Put them in `video-editing/assets/` and set `data-raw-src="assets/raw.mp4"` and `data-edit-src="assets/edit.mp4"` on the `.ba` element in `index.html`. The sample illustration is replaced automatically and both clips play in sync under the wipe.
+- [ ] **Raw vs edited clips** (the most important item): the site already plays two sample clips. Pick one 6–10 second moment from your own work and export it twice at the same length: once straight from the camera, once finished (graded, reframed, captioned). Use 1280×720, H.264 MP4, no audio, under 2 MB each. Save them over `video-editing/assets/sample-raw.mp4` and `sample-edit.mp4`, and replace the two `-poster.jpg` stills with a frame from each. Optionally export `.webm` copies with the same names for older browsers.
 - [ ] **"What changed" list**: rewrite the four items for your real example (timecodes, seconds cut).
 - [ ] **The cut timeline**: edit the `clips` array in `script.js` with your real edit decisions (start and end seconds of each kept and cut section, and the order kept sections appear in the edit). The raw and edited lengths update automatically.
 - [ ] **Full reel**: upload a 60–90 second reel to YouTube and put its 11-character ID in `data-video="REEL_VIDEO_ID"`

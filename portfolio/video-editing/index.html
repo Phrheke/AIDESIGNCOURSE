@@ -51,10 +51,11 @@
         <div class="viewer">
           <!--
             Raw vs edited wipe.
-            For real footage, export the same 6–10 second moment twice (raw and finished, same length, 1280×720, muted)
-            and set data-raw-src and data-edit-src below. Both clips then play in sync under the wipe.
+            Two muted clips of the same moment play in sync under the wipe. The ones in assets/ are samples:
+            export your own 6–10 second moment twice (raw from the camera, and finished), same length, 1280×720,
+            and replace sample-raw.mp4 and sample-edit.mp4 (and their -poster.jpg stills).
           -->
-          <div class="ba" data-ba data-raw-src="" data-edit-src="" style="--pos:50%">
+          <div class="ba" data-ba data-raw-src="assets/sample-raw.mp4" data-edit-src="assets/sample-edit.mp4" data-raw-poster="assets/sample-raw-poster.jpg" data-edit-poster="assets/sample-edit-poster.jpg" style="--pos:50%">
             <div class="ba-layer ba-raw">
               <svg class="scene" viewBox="0 0 1280 720" aria-hidden="true" focusable="false">
                 <g class="scene-shot" id="shot-def">
@@ -88,7 +89,7 @@
           </div>
           <div class="viewer-bar">
             <button type="button" class="play-both" hidden aria-pressed="false">Play both</button>
-            <p class="viewer-note">The Money Desk, the first minute of a 14-minute finance video. Sample frame until you add your clips.</p>
+            <p class="viewer-note">Sample clip. Replace it with your own raw footage and your edit of it.</p>
           </div>
         </div>
 
@@ -98,6 +99,7 @@
             <li><button type="button" class="change" data-view="edit" data-hl="hook"><span class="tc">0:00</span><span><strong>The best line opens the video.</strong> It was at 2:14 in the raw recording.</span></button></li>
             <li><button type="button" class="change" data-view="raw" data-hl="cut"><span class="tc">2:22</span><span><strong>2 minutes 22 seconds cut.</strong> Warm-up, retakes, pauses and a tangent, all gone.</span></button></li>
             <li><button type="button" class="change" data-view="edit" data-hl="keep"><span class="tc">0:58</span><span><strong>Same points in 58 seconds.</strong> Something changes on screen every 4 to 6 seconds.</span></button></li>
+            <li><button type="button" class="change" data-wipe="12"><span class="tc">0:04</span><span><strong>Dead air replaced with a graphic.</strong> The pause in the raw take becomes a chart that makes the point.</span></button></li>
             <li><button type="button" class="change" data-wipe="15"><span class="tc">look</span><span><strong>Colour, punch-in and captions.</strong> Flat camera footage graded, reframed, and captioned for sound-off viewing.</span></button></li>
           </ol>
         </div>
@@ -281,7 +283,7 @@
         <div class="contact-copy">
           <h2>Get a free test edit</h2>
           <p>Send your channel and a sample. If we're a fit, I'll edit the first minute free so you can judge it before you pay anything.</p>
-          <p class="contact-alt">Prefer chatting? <a href="https://wa.me/2340000000000" target="_blank" rel="noopener">Message me on WhatsApp</a>, or email <span class="email" id="email-text">hello@yourname.com</span> <button type="button" class="copy" id="copy-email">Copy</button></p>
+          <p class="contact-alt">Prefer chatting? <a href="https://www.instagram.com/fr3k3h.exe/" target="_blank" rel="noopener me">Message me on Instagram</a>, or email <span class="email" id="email-text">hello@yourname.com</span> <button type="button" class="copy" id="copy-email">Copy</button></p>
           <figure class="quote-small">
             <blockquote>“Never misses an upload day, and actually gets my sense of humour.”</blockquote>
             <figcaption>Amara O., Chef Amara, 640,000 subscribers</figcaption>
@@ -334,7 +336,7 @@
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <p>© <span id="year">2026</span> yourname</p>
-    <p><a href="https://www.youtube.com/" target="_blank" rel="noopener">YouTube</a> <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a> <a href="https://x.com/" target="_blank" rel="noopener">X</a></p>
+    <p><a href="https://www.instagram.com/fr3k3h.exe/" target="_blank" rel="noopener me">Instagram</a></p>
   </div>
 </footer>
 
