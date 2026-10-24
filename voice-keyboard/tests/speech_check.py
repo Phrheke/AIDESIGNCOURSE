@@ -13,13 +13,23 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
 
+import wave  # noqa: E402
+
 import numpy as np  # noqa: E402
-from faster_whisper import decode_audio  # noqa: E402
 
 from test_core import FakeKeys, wait_idle  # noqa: E402
-from vk.audio import PhraseSplitter, TARGET_RATE  # noqa: E402
+from vk.audio import PhraseSplitter, Resampler, TARGET_RATE  # noqa: E402
 from vk.local import LocalSession, SpeechModel  # noqa: E402
 from vk.typer import Typer  # noqa: E402
+
+
+def read_wav(path):
+    """16-bit PCM WAV -> mono float32 at 16 kHz."""
+    with wave.open(path, "rb") as w:
+        assert w.getsampwidth() == 2, "expected 16-bit audio"
+        data = np.frombuffer(w.readframes(w.getnframes()), dtype="<i2").astype(np.float32)
+        data = data.reshape(-1, w.getnchannels()).mean(axis=1) / 32768.0
+        return Resampler(w.getframerate()).process(data.astype(np.float32))
 
 
 def words(text):
@@ -35,7 +45,7 @@ def main():
     model.load()
     print(f"model {model.name} loaded in {time.monotonic() - t:.1f}s")
 
-    audio = decode_audio(wav, sampling_rate=TARGET_RATE)
+    audio = read_wav(wav)
     # half a second of silence before, a second after
     audio = np.concatenate([np.zeros(TARGET_RATE // 2), audio, np.zeros(TARGET_RATE)])
     audio = audio.astype(np.float32)
