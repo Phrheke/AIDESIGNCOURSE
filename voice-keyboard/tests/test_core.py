@@ -9,8 +9,8 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from vk.audio import PreRoll, Resampler, VoiceDetector, to_pcm16  # noqa: E402
-from vk.realtime import RealtimeSession, build_session_update  # noqa: E402
+from vk.audio import PreRoll, Resampler, VoiceDetector  # noqa: E402
+from vk.local import LocalSession, drop_last_word, model_name  # noqa: E402
 from vk.typer import Typer  # noqa: E402
 
 
@@ -77,6 +77,15 @@ class TyperTest(unittest.TestCase):
         wait_idle(t)
         self.assertEqual(self.keys.screen, "Ice cream")
         self.assertGreater(self.keys.backspaces, 0)
+
+    def test_partial_updates_replace_text(self):
+        t = self.typer
+        t.new_session()
+        t.on_partial("a", "I scream")
+        t.on_partial("a", "Ice cream is")
+        t.on_completed("a", "Ice cream is great.")
+        wait_idle(t)
+        self.assertEqual(self.keys.screen, "Ice cream is great.")
 
     def test_newlines_never_typed(self):
         t = self.typer
@@ -148,17 +157,14 @@ class AudioTest(unittest.TestCase):
         t = np.arange(src) / src
         sine = np.sin(2 * np.pi * 440 * t).astype(np.float32)
         out = np.concatenate([r.process(sine[i:i + 1920]) for i in range(0, src, 1920)])
-        self.assertLessEqual(abs(len(out) - 24000), 2)
-        expected = np.sin(2 * np.pi * 440 * np.arange(len(out)) / 24000)
+        self.assertLessEqual(abs(len(out) - 16000), 2)
+        expected = np.sin(2 * np.pi * 440 * np.arange(len(out)) / 16000)
         self.assertLess(np.max(np.abs(out - expected)), 0.02)
 
     def test_resampler_odd_rate(self):
         r = Resampler(44100)
         out = np.concatenate([r.process(np.zeros(441, np.float32)) for _ in range(100)])
-        self.assertLessEqual(abs(len(out) - 24000), 2)
-
-    def test_pcm16(self):
-        self.assertEqual(len(to_pcm16(np.zeros(10, np.float32))), 20)
+        self.assertLessEqual(abs(len(out) - 16000), 2)
 
     def test_voice_detector(self):
         vd = VoiceDetector()
@@ -170,56 +176,89 @@ class AudioTest(unittest.TestCase):
         self.assertEqual(vd.feed(loud)[0], "speech")
         kind, silence = vd.feed(quiet)
         self.assertEqual(kind, "silence")
-        self.assertAlmostEqual(silence, 0.04, places=3)
+        self.assertAlmostEqual(silence, 0.06, places=3)
 
     def test_preroll_keeps_recent_audio(self):
         p = PreRoll(seconds=0.1)
         for _ in range(20):
             p.push(np.zeros(960, np.float32))
         total = sum(len(c) for c in p.drain())
-        self.assertGreaterEqual(total, 2400)
-        self.assertLess(total, 2400 + 960)
+        self.assertGreaterEqual(total, 1600)
+        self.assertLess(total, 1600 + 960)
 
 
-class RealtimeTest(unittest.TestCase):
-    def cfg(self, **kw):
-        cfg = {"model": "gpt-live-transcribe", "language": "en", "prompt": "",
-               "noise_reduction": None, "silence_commit_ms": 700,
-               "realtime_url": "wss://example.invalid", "session_override": {},
-               "extra_headers": {}}
-        cfg.update(kw)
-        return cfg
+class FakeModel:
+    """Pretends to transcribe: one word per 0.5 s of audio."""
+    WORDS = "the quick brown fox jumps over the lazy dog".split()
+    name = "fake"
 
-    def test_live_model_session(self):
-        s = build_session_update(self.cfg())["session"]
-        self.assertEqual(s["type"], "transcription")
-        self.assertIsNone(s["audio"]["input"]["turn_detection"])
-        self.assertEqual(s["audio"]["input"]["transcription"],
-                         {"model": "gpt-live-transcribe", "language": "en"})
+    def __init__(self):
+        self.calls = []
 
-    def test_other_model_uses_server_vad(self):
-        s = build_session_update(self.cfg(model="gpt-4o-transcribe"))["session"]
-        self.assertEqual(s["audio"]["input"]["turn_detection"]["type"], "server_vad")
+    def transcribe(self, audio, final):
+        self.calls.append(("final" if final else "partial", len(audio)))
+        n = max(1, int(len(audio) / 16000 / 0.5))
+        text = " ".join(self.WORDS[:n])
+        return text.capitalize() + ("." if final else "")
 
-    def test_override_merges(self):
-        s = build_session_update(self.cfg(session_override={
-            "audio": {"input": {"format": {"rate": 16000}}}}))["session"]
-        self.assertEqual(s["audio"]["input"]["format"], {"type": "audio/pcm", "rate": 16000})
 
-    def test_events_reach_typer_callbacks(self):
-        got, errors = [], []
-        s = RealtimeSession(self.cfg(), "key", lambda i, d: got.append(("d", i, d)),
-                            lambda i, t: got.append(("c", i, t)), errors.append, tag="s1:")
-        s.handle_event({"type": "conversation.item.input_audio_transcription.delta",
-                        "item_id": "x", "delta": "Hi"})
-        s.handle_event({"type": "conversation.item.input_audio_transcription.completed",
-                        "item_id": "x", "transcript": "Hi."})
-        s.handle_event({"type": "error", "error": {"code": "input_audio_buffer_commit_empty",
-                                                   "message": "buffer too small"}})
-        self.assertEqual(got, [("d", "s1:x", "Hi"), ("c", "s1:x", "Hi.")])
-        self.assertEqual(errors, [])
-        s.handle_event({"type": "error", "error": {"code": "invalid_api_key", "message": "bad"}})
-        self.assertEqual(errors, ["invalid_api_key: bad"])
+class LocalSessionTest(unittest.TestCase):
+    def run_session(self, live):
+        keys = FakeKeys()
+        typer = Typer(keys, delay_s=0)
+        typer.start()
+        typer.new_session()
+        model = FakeModel()
+        partial_screens = []
+
+        def on_partial(item, text):
+            typer.on_partial(item, text)
+            partial_screens.append(text)
+
+        s = LocalSession(model, on_partial, typer.on_completed, tag="s1:", live=live)
+        s.start()
+        chunk = np.zeros(1600, np.float32)  # 0.1 s
+        for _ in range(25):                  # 2.5 s phrase
+            s.send_audio(chunk)
+            time.sleep(0.02)
+        s.commit()
+        for _ in range(10):                  # second phrase, 1 s
+            s.send_audio(chunk)
+        s.finish()
+        self.assertTrue(s.done.wait(3))
+        wait_idle(typer)
+        typer.stop()
+        return keys.screen, model.calls, partial_screens
+
+    def test_live_session_types_partials_then_finals(self):
+        screen, calls, partials = self.run_session(live=True)
+        self.assertEqual(screen, "The quick brown fox jumps. The quick.")
+        self.assertIn("partial", [c[0] for c in calls])
+        self.assertEqual([c[0] for c in calls].count("final"), 2)
+        # partials hide the last (possibly half-heard) word
+        self.assertTrue(all(not p.endswith(".") for p in partials))
+
+    def test_non_live_session_only_types_finals(self):
+        screen, calls, _ = self.run_session(live=False)
+        self.assertEqual(screen, "The quick brown fox jumps. The quick.")
+        self.assertEqual([c[0] for c in calls], ["final", "final"])
+
+    def test_tiny_blips_are_ignored(self):
+        model = FakeModel()
+        done = []
+        s = LocalSession(model, lambda *a: None, lambda i, t: done.append(t), live=False)
+        s.start()
+        s.send_audio(np.zeros(1600, np.float32))  # 0.1 s click
+        s.finish()
+        self.assertTrue(s.done.wait(2))
+        self.assertEqual(done, [])
+
+    def test_helpers(self):
+        self.assertEqual(drop_last_word("hello there frie"), "hello there")
+        self.assertEqual(drop_last_word("hello"), "")
+        self.assertEqual(model_name("base", "en"), "base.en")
+        self.assertEqual(model_name("base", "es"), "base")
+        self.assertEqual(model_name("small", ""), "small")
 
 
 if __name__ == "__main__":

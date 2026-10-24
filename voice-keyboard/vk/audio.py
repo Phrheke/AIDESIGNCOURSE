@@ -1,9 +1,9 @@
-"""Microphone capture -> 24 kHz mono float chunks, plus a tiny voice detector."""
+"""Microphone capture -> 16 kHz mono float chunks, plus a tiny voice detector."""
 import collections
 
 import numpy as np
 
-TARGET_RATE = 24000
+TARGET_RATE = 16000  # what Whisper expects
 
 
 class Resampler:
@@ -31,10 +31,6 @@ class Resampler:
         self.tail = buf[keep:]
         self.pos = nxt - keep
         return out
-
-
-def to_pcm16(x):
-    return (np.clip(x, -1.0, 1.0) * 32767).astype("<i2").tobytes()
 
 
 def rms(x):
@@ -84,6 +80,39 @@ class PreRoll:
         self.chunks.clear()
         self.samples = 0
         return out
+
+
+class PhraseSplitter:
+    """Feeds mic audio to a session, skipping silence and ending phrases at pauses."""
+
+    def __init__(self, session, min_level=0.004, silence_s=0.7, max_phrase_s=12):
+        self.session = session
+        self.detector = VoiceDetector(min_level)
+        self.preroll = PreRoll()
+        self.silence_s = silence_s
+        self.max_phrase_s = max_phrase_s
+        self.speaking = False
+        self.phrase_s = 0.0
+
+    def feed(self, chunk):
+        kind, silence = self.detector.feed(chunk)
+        if not self.speaking:
+            # Skip silence; keep a short pre-roll so word starts aren't cut.
+            self.preroll.push(chunk)
+            if kind == "speech":
+                self.speaking = True
+                self.phrase_s = 0.0
+                for c in self.preroll.drain():
+                    self.session.send_audio(c)
+            return
+        self.session.send_audio(chunk)
+        self.phrase_s += len(chunk) / TARGET_RATE
+        if silence >= self.silence_s:
+            self.session.commit()
+            self.speaking = False
+        elif self.phrase_s >= self.max_phrase_s:
+            self.session.commit()
+            self.phrase_s = 0.0
 
 
 def list_microphones():

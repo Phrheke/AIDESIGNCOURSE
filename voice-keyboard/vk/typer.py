@@ -87,6 +87,16 @@ class Typer:
             item.last_change = time.monotonic()
             self._cond.notify_all()
 
+    def on_partial(self, item_id, text):
+        """Replace the live guess for a phrase that is still being spoken."""
+        with self._cond:
+            item = self._get(item_id)
+            if item is None or item.done:
+                return
+            item.text = text
+            item.last_change = time.monotonic()
+            self._cond.notify_all()
+
     def on_completed(self, item_id, transcript):
         with self._cond:
             item = self._get(item_id)

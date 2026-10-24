@@ -1,33 +1,39 @@
-"""Ties microphone, transcription and typing together; owns the state."""
+"""Ties microphone, speech recognition and typing together; owns the state."""
 import itertools
 import logging
 import threading
 
 from . import config
-from .audio import Microphone, PreRoll, VoiceDetector, to_pcm16, TARGET_RATE
+from .audio import Microphone, PhraseSplitter
 from .keys import Keyboard
-from .realtime import RealtimeSession, is_live_model
+from .local import MODEL_SIZES, LocalSession, SpeechModel
 from .typer import Typer
 
 log = logging.getLogger("app")
 
 
 class Controller:
-    def __init__(self, cfg, notify, on_state, on_heard=None):
+    def __init__(self, cfg, notify, on_state, on_heard=None, on_model=None):
         self.cfg = cfg
         self.notify = notify          # notify(title, message)
         self.on_state = on_state      # on_state(listening: bool)
         self.on_heard = on_heard      # on_heard(final phrase text)
+        self.on_model = on_model      # on_model(status text, ready: bool)
         self.listening = False
+        self.model = None
+        self.model_ready = False
+        self.model_status = "Loading speech model…"
         self._lock = threading.Lock()
+        self._model_gen = 0
         self._mic = None
         self._session = None
         self._ids = itertools.count(1)
         self.typer = Typer(Keyboard())
-        self.apply_config(cfg)
+        self.apply_config(cfg, reload_model=False)
         self.typer.start()
 
-    def apply_config(self, cfg):
+    def apply_config(self, cfg, reload_model=True):
+        old = self.cfg
         self.cfg = cfg
         self.typer.configure(
             delay_s=max(0, cfg["typing_delay_ms"]) / 1000.0,
@@ -35,6 +41,55 @@ class Controller:
             space_at_session_start=cfg["space_at_session_start"],
             correct_on_final=cfg["correct_on_final"],
         )
+        if self.model is not None:
+            self.model.prompt = cfg["prompt"] or None
+            self.model.language = cfg["language"] or None
+        if reload_model and self.model is not None and (
+                SpeechModel(cfg["model_size"], cfg["language"], "").name != self.model.name
+                or cfg["cpu_threads"] != old["cpu_threads"]):
+            self.load_model()
+
+    # ---- speech model ---------------------------------------------------
+
+    def load_model(self):
+        """Download (first time only) and load the speech model in the background."""
+        cfg = self.cfg
+        model = SpeechModel(cfg["model_size"], cfg["language"], config.models_dir(),
+                            prompt=cfg["prompt"], threads=cfg["cpu_threads"])
+        with self._lock:
+            self._model_gen += 1
+            gen = self._model_gen
+            self.model_ready = False
+        if model.is_downloaded():
+            self._set_model_status("Loading speech model…", False)
+        else:
+            size = MODEL_SIZES.get(cfg["model_size"], ("", "?"))[1]
+            self._set_model_status(
+                f"Downloading speech model ({size}, one time only)…", False)
+
+        def work():
+            try:
+                model.load()
+            except Exception as e:
+                log.exception("speech model failed to load")
+                if gen == self._model_gen:
+                    self._set_model_status(
+                        "Couldn't load the speech model. Check your internet for the "
+                        f"first-time download, then restart. ({e})", False)
+                return
+            with self._lock:
+                if gen != self._model_gen:
+                    return  # settings changed again meanwhile
+                self.model = model
+                self.model_ready = True
+            self._set_model_status("Ready", True)
+
+        threading.Thread(target=work, name="model-load", daemon=True).start()
+
+    def _set_model_status(self, text, ready):
+        self.model_status = text
+        if self.on_model:
+            self.on_model(text, ready)
 
     # ---- start / stop ---------------------------------------------------
 
@@ -54,49 +109,15 @@ class Controller:
         self.typer.undo()
 
     def _start(self):
-        key = config.api_key(self.cfg)
-        if not key:
-            self.notify("API key needed",
-                        "Open Settings from the tray icon and paste your OpenAI API key.")
+        if not self.model_ready:
+            self.notify("Voice Keyboard", self.model_status)
             return
         cfg = self.cfg
-        live = is_live_model(cfg["model"])
-        session = RealtimeSession(
-            cfg, key, self.typer.on_delta, self._on_completed,
-            lambda text: self._on_session_error(session, text),
-            tag=f"s{next(self._ids)}:")
-        detector = VoiceDetector(cfg["vad_min_level"])
-        preroll = PreRoll()
-        state = {"speaking": False, "phrase_s": 0.0}
-        silence_limit = cfg["silence_commit_ms"] / 1000.0
-        max_phrase = cfg["max_phrase_seconds"]
-
-        def on_chunk(chunk):
-            # Runs on the audio thread: keep it quick.
-            kind, silence = detector.feed(chunk)
-            if not live:
-                # Server decides where phrases end; just stream everything.
-                session.send_audio(to_pcm16(chunk))
-                return
-            if not state["speaking"]:
-                # Don't upload silence; keep a short pre-roll instead.
-                preroll.push(chunk)
-                if kind == "speech":
-                    state["speaking"] = True
-                    state["phrase_s"] = 0.0
-                    for c in preroll.drain():
-                        session.send_audio(to_pcm16(c))
-                return
-            session.send_audio(to_pcm16(chunk))
-            state["phrase_s"] += len(chunk) / TARGET_RATE
-            if silence >= silence_limit:
-                session.commit()
-                state["speaking"] = False
-            elif state["phrase_s"] >= max_phrase:
-                session.commit()
-                state["phrase_s"] = 0.0
-
-        mic = Microphone(on_chunk, device=cfg["mic_device"])
+        session = LocalSession(self.model, self.typer.on_partial, self._on_completed,
+                               tag=f"s{next(self._ids)}:", live=cfg["live_typing"])
+        splitter = PhraseSplitter(session, cfg["vad_min_level"],
+                                  cfg["silence_commit_ms"] / 1000.0, cfg["max_phrase_seconds"])
+        mic = Microphone(splitter.feed, device=cfg["mic_device"])
         self.typer.new_session()
         session.start()
         try:
@@ -106,7 +127,7 @@ class Controller:
             log.exception("microphone failed")
             self.notify("Microphone error", str(e))
             return
-        log.info("listening on %s with %s", name, cfg["model"])
+        log.info("listening on %s with %s", name, self.model.name)
         self._mic, self._session = mic, session
         self.listening = True
         self.on_state(True)
@@ -123,18 +144,6 @@ class Controller:
         self.typer.on_completed(item_id, transcript)
         if transcript and transcript.strip() and self.on_heard:
             self.on_heard(transcript.strip())
-
-    def _on_session_error(self, session, text):
-        self.notify("Voice Keyboard", text)
-        if text.startswith("Transcription failed"):
-            return  # one phrase was lost; the session still works
-        # Auth/connection/config errors: stop the mic so the icon is honest.
-        threading.Thread(target=self._stop_session, args=(session,), daemon=True).start()
-
-    def _stop_session(self, session):
-        with self._lock:
-            if self.listening and self._session is session:
-                self._stop()
 
     def shutdown(self):
         self.stop()

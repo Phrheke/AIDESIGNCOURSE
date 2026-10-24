@@ -31,23 +31,45 @@ jobs:
       - name: Test
         run: python -m unittest discover tests -v
 
+      - name: Real speech test (Windows reads a sentence aloud, app must type it)
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Speech
+          $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
+          $s.Rate = 0
+          $s.SetOutputToWaveFile("$PWD\speech.wav")
+          $s.Speak("Hello world. This is my voice keyboard test. It types what I say.")
+          $s.Dispose()
+          python tests/speech_check.py speech.wav "hello world this is my voice keyboard test it types what i say" base
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - name: Build exe
         run: |
           python -m vk.icon icon.ico
           pyinstaller --noconfirm --onefile --windowed --name VoiceKeyboard --icon icon.ico `
+            --collect-all faster_whisper `
+            --collect-binaries ctranslate2 `
             --hidden-import pystray._win32 `
             --hidden-import pynput.keyboard._win32 `
             --hidden-import pynput.mouse._win32 `
             voice_keyboard.py
 
-      - name: Smoke test (exe starts and stays running)
+      - name: Smoke test (exe starts, downloads and loads the speech model)
         shell: pwsh
         run: |
+          $log = "$env:APPDATA\VoiceKeyboard\voicekeyboard.log"
+          Remove-Item -Recurse -Force "$env:APPDATA\VoiceKeyboard" -ErrorAction SilentlyContinue
           $p = Start-Process dist\VoiceKeyboard.exe -PassThru
-          Start-Sleep -Seconds 8
-          if ($p.HasExited) { Get-Content "$env:APPDATA\VoiceKeyboard\voicekeyboard.log" -ErrorAction SilentlyContinue; throw "exe exited early (code $($p.ExitCode))" }
+          $ok = $false
+          for ($i = 0; $i -lt 90; $i++) {
+            Start-Sleep -Seconds 2
+            if ($p.HasExited) { break }
+            if ((Test-Path $log) -and (Select-String -Path $log -Pattern "speech model .* ready" -Quiet)) { $ok = $true; break }
+          }
+          Get-Content $log -ErrorAction SilentlyContinue
+          if ($p.HasExited) { throw "exe exited early (code $($p.ExitCode))" }
           Stop-Process $p
-          Get-Content "$env:APPDATA\VoiceKeyboard\voicekeyboard.log" -ErrorAction SilentlyContinue
+          if (-not $ok) { throw "speech model did not load in the exe" }
 
       - uses: actions/upload-artifact@v4
         with:
@@ -63,4 +85,4 @@ jobs:
           gh release create voice-keyboard-latest dist/VoiceKeyboard.exe \
             --target "$GITHUB_SHA" --prerelease \
             --title "Voice Keyboard for Windows" \
-            --notes "Download **VoiceKeyboard.exe** below, double-click it, paste your OpenAI API key in Settings, and press Ctrl+Shift+Space to talk. If Windows shows 'Windows protected your PC', click **More info → Run anyway** (the app isn't code-signed). Built from ${GITHUB_SHA::7}."
+            --notes "Free, offline voice typing. Download **VoiceKeyboard.exe** below and double-click it. The first start downloads the speech model once (about 145 MB); after that it works offline. Click into any app, press Ctrl+Shift+Space and talk. If Windows shows 'Windows protected your PC', click **More info → Run anyway** (the app isn't code-signed). Built from ${GITHUB_SHA::7}."

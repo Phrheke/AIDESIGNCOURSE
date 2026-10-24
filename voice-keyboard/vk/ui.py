@@ -8,14 +8,10 @@ from tkinter import ttk
 
 from PIL import ImageTk
 
-from . import config
 from .icon import BLUE, make_icon
+from .local import MODEL_SIZES
 
-MODELS = [
-    ("gpt-live-transcribe", "Live: types while you talk"),
-    ("gpt-4o-transcribe", "Accurate: types after each pause"),
-    ("gpt-4o-mini-transcribe", "Cheaper: types after each pause"),
-]
+MODELS = [(size, f"{label} - {dl}") for size, (label, dl) in MODEL_SIZES.items()]
 LANGUAGES = [
     ("", "Auto-detect"), ("en", "English"), ("es", "Spanish"), ("fr", "French"),
     ("de", "German"), ("pt", "Portuguese"), ("it", "Italian"), ("nl", "Dutch"),
@@ -27,7 +23,7 @@ HOTKEY_PRESETS = ["Ctrl+Shift+Space", "Ctrl+Alt+Space", "Ctrl+Alt+D", "F8", "F9"
 UNDO_PRESETS = ["Ctrl+Shift+Backspace", "Ctrl+Alt+Backspace", "Ctrl+Alt+Z", "F7"]
 DEFAULT_MIC = "Windows default microphone"
 
-GREEN, RED, GREY = "#16a34a", "#dc2626", "#6b7280"
+GREEN, RED, GREY, AMBER = "#16a34a", "#dc2626", "#6b7280", "#d97706"
 
 
 def pretty_hotkey(hk):
@@ -95,7 +91,8 @@ class MainWindow:
         self._build_home()
         self._build_settings()
         self.load_settings_into_form()
-        self.set_state(False)
+        self._model_ready = False
+        self.set_model_status(app.controller.model_status, app.controller.model_ready)
 
     # ---- Home -----------------------------------------------------------
 
@@ -115,8 +112,9 @@ class MainWindow:
         self.button = ttk.Button(f, style="Big.TButton", command=self.app.toggle_from_window)
         self.button.pack(fill="x")
 
-        self.key_warning = ttk.Label(f, style="Warn.TLabel", wraplength=420,
-                                     text="Add your OpenAI API key in Settings to get started.")
+        ttk.Label(f, style="Hint.TLabel", wraplength=420,
+                  text="Free and private: speech is recognised on this PC, "
+                       "nothing is sent to the internet.").pack(fill="x", pady=(8, 0))
 
         hdr = ttk.Frame(f)
         hdr.pack(fill="x", pady=(18, 4))
@@ -137,7 +135,20 @@ class MainWindow:
     def _bg(self):
         return ttk.Style(self.root).lookup("TFrame", "background") or "#f0f0f0"
 
+    def set_model_status(self, text, ready):
+        self._model_ready = ready
+        if ready:
+            self.set_state(self.app.controller.listening)
+            return
+        self.dot.itemconfigure(self.dot_id, fill=AMBER)
+        self.status.configure(text="Getting ready…")
+        self.hint.configure(text=text)
+        self.button.configure(text="Please wait…", state="disabled")
+
     def set_state(self, listening):
+        if not self._model_ready:
+            return
+        self.button.configure(state="normal")
         hk = pretty_hotkey(self.app.cfg["hotkey_toggle"])
         undo = pretty_hotkey(self.app.cfg["hotkey_undo"])
         if listening:
@@ -153,10 +164,6 @@ class MainWindow:
                 f"Click into any app (browser, Word, WhatsApp…), press {hk} and talk. "
                 f"Press it again to stop. {undo} deletes the last phrase. "
                 "Nothing is ever sent: it never presses Enter."))
-        if config.api_key(self.app.cfg):
-            self.key_warning.pack_forget()
-        else:
-            self.key_warning.pack(fill="x", pady=(10, 0), after=self.button)
 
     def add_heard(self, text):
         self.heard.configure(state="normal")
@@ -182,7 +189,7 @@ class MainWindow:
         f = self.settings
         f.columnconfigure(1, weight=1)
         self.v = {
-            "api_key": tk.StringVar(), "model": tk.StringVar(), "language": tk.StringVar(),
+            "model_size": tk.StringVar(), "live_typing": tk.BooleanVar(), "language": tk.StringVar(),
             "mic_device": tk.StringVar(), "hotkey_toggle": tk.StringVar(),
             "hotkey_undo": tk.StringVar(), "prompt": tk.StringVar(),
             "typing_delay_ms": tk.IntVar(), "space_between_phrases": tk.BooleanVar(),
@@ -198,22 +205,10 @@ class MainWindow:
                 ttk.Label(f, text=hint, style="Hint.TLabel", wraplength=280).grid(
                     row=row + 1, column=1, sticky="w")
 
-        label("OpenAI API key", "Get one at platform.openai.com/api-keys")
-        keyrow = ttk.Frame(f)
-        keyrow.grid(row=row, column=1, sticky="ew")
-        keyrow.columnconfigure(0, weight=1)
-        self.key_entry = ttk.Entry(keyrow, textvariable=self.v["api_key"], show="•")
-        self.key_entry.grid(row=0, column=0, sticky="ew")
-        self.show_key = tk.BooleanVar()
-        ttk.Checkbutton(keyrow, text="Show", variable=self.show_key,
-                        command=lambda: self.key_entry.configure(
-                            show="" if self.show_key.get() else "•")).grid(row=0, column=1, padx=4)
-        row += 2
-
-        label("Mode")
-        ttk.Combobox(f, textvariable=self.v["model"], state="readonly",
+        label("Accuracy", "Bigger = more accurate but slower. Downloads once.")
+        ttk.Combobox(f, textvariable=self.v["model_size"], state="readonly",
                      values=[m[1] for m in MODELS]).grid(row=row, column=1, sticky="ew")
-        row += 1
+        row += 2
 
         label("Language")
         ttk.Combobox(f, textvariable=self.v["language"], state="readonly",
@@ -251,7 +246,8 @@ class MainWindow:
         ttk.Label(speed, text="Human-like", style="Hint.TLabel").pack(side="left")
         row += 1
 
-        for key, text in (("space_between_phrases", "Add a space between phrases"),
+        for key, text in (("live_typing", "Show words while I talk (off = type after each pause)"),
+                          ("space_between_phrases", "Add a space between phrases"),
                           ("correct_on_final", "Fix words when the final transcript is clearer"),
                           ("beep", "Beep when starting / stopping"),
                           ("startup", "Start Voice Keyboard when Windows starts")):
@@ -276,15 +272,14 @@ class MainWindow:
 
     def load_settings_into_form(self):
         cfg = self.app.cfg
-        self.v["api_key"].set(cfg.get("api_key", ""))
-        self.v["model"].set(_label_for(MODELS, cfg["model"]))
+        self.v["model_size"].set(_label_for(MODELS, cfg["model_size"]))
         self.v["language"].set(_label_for(LANGUAGES, cfg["language"]))
         self.v["mic_device"].set(cfg["mic_device"] or DEFAULT_MIC)
         self.v["hotkey_toggle"].set(pretty_hotkey(cfg["hotkey_toggle"]))
         self.v["hotkey_undo"].set(pretty_hotkey(cfg["hotkey_undo"]))
         self.v["prompt"].set(cfg.get("prompt", ""))
         self.v["typing_delay_ms"].set(int(cfg["typing_delay_ms"]))
-        for key in ("space_between_phrases", "correct_on_final", "beep"):
+        for key in ("live_typing", "space_between_phrases", "correct_on_final", "beep"):
             self.v[key].set(bool(cfg[key]))
         self.v["startup"].set(self.app.startup_enabled())
         self._refresh_mics()
@@ -293,8 +288,8 @@ class MainWindow:
         mic = self.v["mic_device"].get()
         new = dict(self.app.cfg)
         new.update({
-            "api_key": self.v["api_key"].get().strip(),
-            "model": _value_for(MODELS, self.v["model"].get()),
+            "model_size": _value_for(MODELS, self.v["model_size"].get()),
+            "live_typing": self.v["live_typing"].get(),
             "language": _value_for(LANGUAGES, self.v["language"].get()),
             "mic_device": None if mic in ("", DEFAULT_MIC) else mic,
             "hotkey_toggle": to_pynput(self.v["hotkey_toggle"].get()) or new["hotkey_toggle"],

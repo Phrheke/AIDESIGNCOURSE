@@ -5,6 +5,8 @@ if not exist .venv\ready call run.bat
 .venv\Scripts\python -m pip install -q pyinstaller
 .venv\Scripts\python -m vk.icon icon.ico
 .venv\Scripts\pyinstaller --noconfirm --onefile --windowed --name VoiceKeyboard --icon icon.ico ^
+  --collect-all faster_whisper ^
+  --collect-binaries ctranslate2 ^
   --hidden-import pystray._win32 ^
   --hidden-import pynput.keyboard._win32 ^
   --hidden-import pynput.mouse._win32 ^

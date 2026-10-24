@@ -4,15 +4,14 @@ import os
 import sys
 
 DEFAULTS = {
-    # Your OpenAI API key. Leave empty to use the OPENAI_API_KEY environment variable.
-    "api_key": "",
-    # gpt-live-transcribe streams words while you talk. Any other model
-    # (e.g. gpt-4o-transcribe) types each phrase after you pause.
-    "model": "gpt-live-transcribe",
+    # Speech model size: "tiny" (fast), "base" (balanced), "small" (most accurate).
+    "model_size": "base",
     # Language code like "en", "es", "fr". Empty = auto-detect.
     "language": "en",
     # Optional hint: names, jargon or spellings the model should know about.
     "prompt": "",
+    # Show words while you talk (True), or type each phrase after you pause (False).
+    "live_typing": True,
     "hotkey_toggle": "<ctrl>+<shift>+<space>",
     "hotkey_undo": "<ctrl>+<shift>+<backspace>",
     # Pause between typed letters. 0 = as fast as possible.
@@ -24,20 +23,16 @@ DEFAULTS = {
     # When the final transcript differs from the live one, backspace and fix it.
     "correct_on_final": True,
     "beep": True,
-    # Microphone name or index. null = Windows default microphone.
+    # Microphone name. null = Windows default microphone.
     "mic_device": None,
     # How long a pause ends a phrase (milliseconds).
     "silence_commit_ms": 700,
     # Force a phrase break after this many seconds of continuous speech.
-    "max_phrase_seconds": 20,
+    "max_phrase_seconds": 12,
     # Minimum mic level counted as speech (0..1). Raise it in noisy rooms.
     "vad_min_level": 0.004,
-    # "near_field" (headset/laptop mic), "far_field", or null to disable.
-    "noise_reduction": None,
-    "realtime_url": "wss://api.openai.com/v1/realtime?intent=transcription",
-    # Escape hatches in case the API changes: merged into the session config / headers.
-    "session_override": {},
-    "extra_headers": {},
+    # CPU threads for speech recognition. 0 = automatic.
+    "cpu_threads": 0,
 }
 
 
@@ -62,7 +57,9 @@ def load():
     cfg = dict(DEFAULTS)
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8-sig") as f:
-            cfg.update(json.load(f))
+            saved = json.load(f)
+        # Only keep settings this version knows about.
+        cfg.update({k: v for k, v in saved.items() if k in DEFAULTS})
     # Write back so newly added settings show up in the file.
     save(cfg)
     return cfg
@@ -73,5 +70,7 @@ def save(cfg):
         json.dump(cfg, f, indent=2)
 
 
-def api_key(cfg):
-    return (cfg.get("api_key") or os.environ.get("OPENAI_API_KEY") or "").strip()
+def models_dir():
+    path = os.path.join(app_dir(), "models")
+    os.makedirs(path, exist_ok=True)
+    return path

@@ -115,6 +115,7 @@ class VoiceKeyboardApp:
         self.pretty_hotkey = pretty_hotkey
         self.cfg = config.load()
         self.hotkeys = None
+        self._first_ready = True
         self._calls = queue.Queue()  # work for the UI thread (tkinter isn't thread-safe)
         self._icons = {False: make_icon(GREY), True: make_icon(RED)}
 
@@ -122,7 +123,8 @@ class VoiceKeyboardApp:
             self.cfg,
             notify=self.notify,
             on_state=lambda listening: self.ui(self._on_state, listening),
-            on_heard=lambda text: self.ui(self.window.add_heard, text))
+            on_heard=lambda text: self.ui(self.window.add_heard, text),
+            on_model=lambda text, ready: self.ui(self._on_model, text, ready))
 
         self.root = tk.Tk()
         self.window = MainWindow(self.root, self)
@@ -217,6 +219,14 @@ class VoiceKeyboardApp:
         self.icon.update_menu()
         self.window.set_state(listening)
 
+    def _on_model(self, text, ready):
+        self.window.set_model_status(text, ready)
+        self.icon.title = "Voice Keyboard" if ready else f"Voice Keyboard - {text}"
+        if ready and self._first_ready:
+            self._first_ready = False
+            self.notify("Voice Keyboard is ready",
+                        f"Press {self.pretty_hotkey(self.cfg['hotkey_toggle'])} in any app and talk.")
+
     def register_hotkeys(self):
         from pynput import keyboard
         if self.hotkeys:
@@ -237,9 +247,7 @@ class VoiceKeyboardApp:
     def run(self):
         self.register_hotkeys()
         self.icon.run_detached()
-        if not self.config.api_key(self.cfg):
-            self.window.show()
-            self.window.notebook.select(self.window.settings)
+        self.controller.load_model()
         self.root.after(50, self._pump)
         self.root.mainloop()
 
