@@ -86,6 +86,41 @@ class PreRoll:
         return out
 
 
+def list_microphones():
+    """Names of input devices, using the same driver type as the default mic
+    (Windows lists every mic once per driver, which would show duplicates)."""
+    import sounddevice as sd
+
+    try:
+        default_api = sd.query_devices(kind="input")["hostapi"]
+    except Exception:
+        default_api = None
+    names = []
+    for dev in sd.query_devices():
+        if dev["max_input_channels"] > 0 and dev["hostapi"] in (default_api, None):
+            if dev["name"] not in names:
+                names.append(dev["name"])
+    return names
+
+
+def resolve_device(device):
+    """Turn a saved mic name into a device index; None means the default mic."""
+    if device is None or isinstance(device, int) or device == "":
+        return device if device != "" else None
+    import sounddevice as sd
+
+    try:
+        default_api = sd.query_devices(kind="input")["hostapi"]
+    except Exception:
+        default_api = None
+    matches = [(i, d) for i, d in enumerate(sd.query_devices())
+               if d["max_input_channels"] > 0 and str(device).lower() in d["name"].lower()]
+    if not matches:
+        return None  # mic unplugged: fall back to the default one
+    matches.sort(key=lambda m: m[1]["hostapi"] != default_api)
+    return matches[0][0]
+
+
 class Microphone:
     def __init__(self, on_chunk, device=None, block_ms=40):
         self.on_chunk = on_chunk
@@ -96,7 +131,8 @@ class Microphone:
     def start(self):
         import sounddevice as sd
 
-        info = sd.query_devices(self.device, "input")
+        device = resolve_device(self.device)
+        info = sd.query_devices(device, "input")
         rate = int(info["default_samplerate"])
         resampler = Resampler(rate)
 
@@ -106,7 +142,7 @@ class Microphone:
                 self.on_chunk(out)
 
         self._stream = sd.InputStream(
-            device=self.device, samplerate=rate, channels=1, dtype="float32",
+            device=device, samplerate=rate, channels=1, dtype="float32",
             blocksize=int(rate * self.block_ms / 1000), callback=callback)
         self._stream.start()
         return info["name"]

@@ -13,10 +13,11 @@ log = logging.getLogger("app")
 
 
 class Controller:
-    def __init__(self, cfg, notify, on_state):
+    def __init__(self, cfg, notify, on_state, on_heard=None):
         self.cfg = cfg
         self.notify = notify          # notify(title, message)
         self.on_state = on_state      # on_state(listening: bool)
+        self.on_heard = on_heard      # on_heard(final phrase text)
         self.listening = False
         self._lock = threading.Lock()
         self._mic = None
@@ -61,7 +62,7 @@ class Controller:
         cfg = self.cfg
         live = is_live_model(cfg["model"])
         session = RealtimeSession(
-            cfg, key, self.typer.on_delta, self.typer.on_completed,
+            cfg, key, self.typer.on_delta, self._on_completed,
             lambda text: self._on_session_error(session, text),
             tag=f"s{next(self._ids)}:")
         detector = VoiceDetector(cfg["vad_min_level"])
@@ -117,6 +118,11 @@ class Controller:
         self.listening = False
         self.on_state(False)
         log.info("stopped listening")
+
+    def _on_completed(self, item_id, transcript):
+        self.typer.on_completed(item_id, transcript)
+        if transcript and transcript.strip() and self.on_heard:
+            self.on_heard(transcript.strip())
 
     def _on_session_error(self, session, text):
         self.notify("Voice Keyboard", text)

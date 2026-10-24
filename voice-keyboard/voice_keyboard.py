@@ -1,21 +1,16 @@
 """Voice Keyboard: talk, and it types into whatever app you're using.
 
-Runs in the system tray. Press the hotkey (default Ctrl+Shift+Space) to
-start listening, press it again to stop. Text is typed letter by letter into
-the focused window and is never sent: no Enter key is ever pressed.
+Opens a small window (Home + Settings) and lives in the system tray.
+Press the hotkey (default Ctrl+Shift+Space) to start listening, press it
+again to stop. Text is typed letter by letter into the focused window and
+is never sent: no Enter key is ever pressed.
 """
 import logging
 import os
+import queue
 import subprocess
 import sys
 import threading
-
-from pynput import keyboard
-import pystray
-from PIL import Image, ImageDraw
-
-from vk import config
-from vk.app import Controller
 
 APP_NAME = "VoiceKeyboard"
 log = logging.getLogger("main")
@@ -41,6 +36,16 @@ def message_box(title, text):
         print(f"{title}: {text}")
 
 
+def dpi_aware():
+    # Without this the window looks blurry on high-resolution screens.
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            pass
+
+
 def beep(freq):
     if sys.platform == "win32":
         import winsound
@@ -48,20 +53,22 @@ def beep(freq):
 
 
 def open_file(path):
+    if not os.path.exists(path):
+        open(path, "a").close()
     if sys.platform == "win32":
-        subprocess.Popen(["notepad.exe", path])
+        os.startfile(path)
     else:
         subprocess.Popen(["xdg-open", path])
 
 
 def launch_command():
     if getattr(sys, "frozen", False):
-        return f'"{sys.executable}"'
+        return f'"{sys.executable}" --minimized'
     exe = sys.executable
     pyw = os.path.join(os.path.dirname(exe), "pythonw.exe")
     if os.path.exists(pyw):
         exe = pyw
-    return f'"{exe}" "{os.path.abspath(__file__)}"'
+    return f'"{exe}" "{os.path.abspath(__file__)}" --minimized'
 
 
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
@@ -93,54 +100,66 @@ def set_startup(enabled):
                 pass
 
 
-# ---- tray icon ------------------------------------------------------------
+# ---- the app --------------------------------------------------------------
 
-def make_icon(color):
-    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle((22, 6, 42, 40), radius=10, fill=color)          # mic head
-    d.arc((14, 18, 50, 50), start=0, end=180, fill=color, width=4)       # holder
-    d.line((32, 50, 32, 58), fill=color, width=4)                        # stand
-    d.line((22, 58, 42, 58), fill=color, width=4)
-    return img
+class VoiceKeyboardApp:
+    def __init__(self, start_hidden=False):
+        import tkinter as tk
+        import pystray
+        from vk import config
+        from vk.app import Controller
+        from vk.icon import GREY, RED, make_icon
+        from vk.ui import MainWindow, pretty_hotkey
 
-
-ICON_IDLE = make_icon((150, 150, 150, 255))
-ICON_LISTENING = make_icon((230, 40, 40, 255))
-
-
-def pretty_hotkey(hk):
-    return "+".join(p.strip("<>").capitalize() for p in hk.split("+"))
-
-
-class TrayApp:
-    def __init__(self):
+        self.config = config
+        self.pretty_hotkey = pretty_hotkey
         self.cfg = config.load()
         self.hotkeys = None
-        self.controller = Controller(self.cfg, self.notify, self._on_state)
-        self.icon = pystray.Icon(APP_NAME, ICON_IDLE, "Voice Keyboard", menu=self._menu())
+        self._calls = queue.Queue()  # work for the UI thread (tkinter isn't thread-safe)
+        self._icons = {False: make_icon(GREY), True: make_icon(RED)}
 
-    def _menu(self):
+        self.controller = Controller(
+            self.cfg,
+            notify=self.notify,
+            on_state=lambda listening: self.ui(self._on_state, listening),
+            on_heard=lambda text: self.ui(self.window.add_heard, text))
+
+        self.root = tk.Tk()
+        self.window = MainWindow(self.root, self)
+        if start_hidden:
+            self.root.withdraw()
+
         Item = pystray.MenuItem
-        return pystray.Menu(
-            Item(lambda _: ("Stop listening" if self.controller.listening else "Start listening")
-                 + f"  ({pretty_hotkey(self.cfg['hotkey_toggle'])})",
-                 lambda: self._bg(self.controller.toggle), default=True),
-            Item(lambda _: f"Undo last phrase  ({pretty_hotkey(self.cfg['hotkey_undo'])})",
-                 lambda: self.controller.undo()),
+        self.icon = pystray.Icon(APP_NAME, self._icons[False], "Voice Keyboard", menu=pystray.Menu(
+            Item("Open Voice Keyboard", lambda: self.ui(self.window.show), default=True),
+            Item(lambda _: "Stop listening" if self.controller.listening else "Start listening",
+                 lambda: self._bg(self.controller.toggle)),
+            Item("Undo last phrase", lambda: self.controller.undo()),
             pystray.Menu.SEPARATOR,
-            Item("Settings…", lambda: open_file(config.config_path())),
-            Item("Reload settings", self.reload),
-            Item("Open log", lambda: open_file(config.log_path())),
-            Item("Start with Windows", self._toggle_startup,
-                 checked=lambda _: startup_enabled(), visible=sys.platform == "win32"),
-            pystray.Menu.SEPARATOR,
-            Item("Quit", self.quit),
-        )
+            Item("Quit", lambda: self.ui(self.quit)),
+        ))
+
+    # ---- plumbing -------------------------------------------------------
+
+    def ui(self, fn, *args):
+        """Run fn on the UI thread."""
+        self._calls.put((fn, args))
+
+    def _pump(self):
+        while True:
+            try:
+                fn, args = self._calls.get_nowait()
+            except queue.Empty:
+                break
+            try:
+                fn(*args)
+            except Exception:
+                log.exception("UI call failed")
+        self.root.after(50, self._pump)
 
     @staticmethod
     def _bg(fn):
-        # Never block the keyboard hook / tray thread.
+        # Never block the keyboard hook, tray or window.
         threading.Thread(target=fn, daemon=True).start()
 
     def notify(self, title, message):
@@ -150,17 +169,56 @@ class TrayApp:
         except Exception:
             pass
 
+    # ---- used by the window ---------------------------------------------
+
+    def toggle_from_window(self):
+        if self.controller.listening:
+            self._bg(self.controller.toggle)
+            return
+        # Minimize first so the typing goes to the app you were using, not here.
+        self.root.iconify()
+        self.root.after(500, lambda: self._bg(self.controller.toggle))
+
+    def open_log(self):
+        open_file(self.config.log_path())
+
+    def list_microphones(self):
+        from vk.audio import list_microphones
+        return list_microphones()
+
+    def startup_enabled(self):
+        return startup_enabled()
+
+    def save_settings(self, new_cfg, start_with_windows):
+        """Returns an error message, or None on success."""
+        old = self.cfg
+        self.cfg = new_cfg
+        try:
+            self.register_hotkeys()
+        except Exception as e:
+            self.cfg = old
+            self.register_hotkeys()
+            return f"That shortcut doesn't work: {e}"
+        self.config.save(new_cfg)
+        self.controller.apply_config(new_cfg)
+        try:
+            set_startup(start_with_windows)
+        except OSError as e:
+            return f"Saved, but couldn't change startup: {e}"
+        return None
+
+    # ---- state ----------------------------------------------------------
+
     def _on_state(self, listening):
         if self.cfg["beep"]:
             beep(880 if listening else 520)
-        self.icon.icon = ICON_LISTENING if listening else ICON_IDLE
+        self.icon.icon = self._icons[listening]
         self.icon.title = "Voice Keyboard - listening" if listening else "Voice Keyboard"
         self.icon.update_menu()
-
-    def _toggle_startup(self, icon, item):
-        set_startup(not startup_enabled())
+        self.window.set_state(listening)
 
     def register_hotkeys(self):
+        from pynput import keyboard
         if self.hotkeys:
             self.hotkeys.stop()
         self.hotkeys = keyboard.GlobalHotKeys({
@@ -169,56 +227,38 @@ class TrayApp:
         })
         self.hotkeys.start()
 
-    def reload(self):
-        try:
-            self.cfg = config.load()
-        except Exception as e:
-            self.notify("Settings error", f"Couldn't read config.json: {e}")
-            return
-        self.controller.apply_config(self.cfg)
-        try:
-            self.register_hotkeys()
-        except Exception as e:
-            self.notify("Hotkey error", str(e))
-            return
-        self.icon.update_menu()
-        self.notify("Voice Keyboard", "Settings reloaded.")
-
     def quit(self):
         self.controller.shutdown()
         if self.hotkeys:
             self.hotkeys.stop()
         self.icon.stop()
+        self.root.destroy()
 
     def run(self):
         self.register_hotkeys()
-
-        def setup(icon):
-            icon.visible = True
-            if not config.api_key(self.cfg):
-                open_file(config.config_path())
-                self.notify("Welcome to Voice Keyboard",
-                            "Paste your OpenAI API key into the settings file, save it, "
-                            "then choose 'Reload settings' from the tray icon.")
-            else:
-                self.notify("Voice Keyboard is running",
-                            f"Press {pretty_hotkey(self.cfg['hotkey_toggle'])} to start talking.")
-
-        self.icon.run(setup)
+        self.icon.run_detached()
+        if not self.config.api_key(self.cfg):
+            self.window.show()
+            self.window.notebook.select(self.window.settings)
+        self.root.after(50, self._pump)
+        self.root.mainloop()
 
 
 def main():
+    from vk import config
     logging.basicConfig(
         filename=config.log_path(), level=logging.INFO, encoding="utf-8",
         format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     if not single_instance():
-        message_box("Voice Keyboard", "Voice Keyboard is already running (check the tray).")
+        message_box("Voice Keyboard", "Voice Keyboard is already running.\n\n"
+                    "Look for the microphone icon in the tray (bottom-right, near the clock).")
         return
+    dpi_aware()
     try:
-        app = TrayApp()
+        app = VoiceKeyboardApp(start_hidden="--minimized" in sys.argv)
     except Exception as e:
         log.exception("startup failed")
-        message_box("Voice Keyboard", f"Couldn't start: {e}\n\nSee {config.log_path()}")
+        message_box("Voice Keyboard", f"Couldn't start: {e}\n\nDetails: {config.log_path()}")
         return
     app.run()
 

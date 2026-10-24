@@ -8,35 +8,42 @@ Your text stays in the box until you review it and send it yourself.
 - It's light. No AI runs on your PC. It's a small tray app (about 50 MB of RAM) that streams your mic to OpenAI.
 - If the final transcript differs from the live guess, it backspaces and fixes the text, the way you'd fix a typo.
 
-## Setup (once)
+## Download and run (easiest)
 
-1. Install **Python 3.9 or newer** from <https://www.python.org/downloads/>.
-   During install, tick **"Add python.exe to PATH"**.
-2. Get an OpenAI API key at <https://platform.openai.com/api-keys>. Billing must be enabled. Transcription costs about $0.20–0.40 per hour of speech.
-3. Download this `voice-keyboard` folder and double-click **`run.bat`**.
-   The first run installs everything into a private `.venv` folder.
-4. A settings file opens in Notepad. Paste your key between the quotes on the `"api_key"` line, then save.
-5. Right-click the **microphone icon** in the tray (bottom-right, maybe under the `^` arrow) and choose **Reload settings**.
+1. Download **VoiceKeyboard.exe** from
+   <https://github.com/Phrheke/AIDESIGNCOURSE/releases/download/voice-keyboard-latest/VoiceKeyboard.exe>
+2. Double-click it. If Windows says **"Windows protected your PC"**, click **More info → Run anyway**.
+   The app isn't code-signed, which is normal for small personal apps.
+3. The Voice Keyboard window opens on **Settings**. Paste your OpenAI API key and click **Save**.
+   Get a key at <https://platform.openai.com/api-keys>. Billing must be enabled. It costs about $0.20–0.40 per hour of speech.
+
+No Python or installing needed. Put the .exe anywhere, e.g. your Desktop.
 
 ## Use it
 
 | Action | Shortcut |
 |---|---|
-| Start / stop listening | **Ctrl + Shift + Space** (or click the tray icon) |
+| Start / stop listening | **Ctrl + Shift + Space**, or the big button in the window |
 | Delete the last phrase it typed | **Ctrl + Shift + Backspace** |
 
-1. Click into any text box.
-2. Press **Ctrl+Shift+Space**. You'll hear a high beep and the icon turns **red**.
+1. Click into any text box in any app.
+2. Press **Ctrl+Shift+Space**. You'll hear a high beep and the tray mic icon turns **red**.
 3. Talk. Words appear as you speak.
-4. Press **Ctrl+Shift+Space** again to stop (low beep). Any last words still finish typing.
+4. Press **Ctrl+Shift+Space** again to stop (low beep).
 
-Tip: don't click into another window while it's typing. Like a real keyboard, it types into whatever window has focus.
+Closing the window keeps it running in the tray (bottom-right, near the clock).
+Right-click the tray mic icon → **Quit** to exit fully.
+Every phrase it heard is listed on the Home page, so you can copy it again if needed.
 
-**Start with Windows:** right-click the tray icon and tick **Start with Windows**.
+## Run from source instead (optional)
+
+Install Python 3.9+ from python.org (tick "Add python.exe to PATH") and double-click **`run.bat`**.
+To build the .exe yourself, double-click **`build.bat`**.
 
 ## Settings
 
-Tray icon → **Settings…** opens `%APPDATA%\VoiceKeyboard\config.json`. After editing, choose **Reload settings**.
+Everything common is on the **Settings** page of the window. Advanced options live in
+`%APPDATA%\VoiceKeyboard\config.json`; restart the app after editing that file.
 
 | Setting | What it does |
 |---|---|
@@ -54,14 +61,9 @@ Tray icon → **Settings…** opens `%APPDATA%\VoiceKeyboard\config.json`. After
 | `noise_reduction` | `"near_field"` for headsets and laptop mics, `"far_field"` for room mics. |
 | `beep` | Turns the start/stop beeps on or off. |
 
-## Make a standalone .exe (optional)
-
-Double-click **`build.bat`**. You get `dist\VoiceKeyboard.exe`, which runs without Python.
-Copy it anywhere and pin it, or use **Start with Windows**.
-
 ## Troubleshooting
 
-- **Nothing types:** open the tray menu → **Open log**. Usually it's a wrong API key or no billing on the OpenAI account.
+- **Nothing types:** Settings → **Open log**. Usually it's a wrong API key or no billing on the OpenAI account.
 - **Doesn't type into one specific app:** apps running *as administrator* ignore normal apps. Run Voice Keyboard as administrator too.
 - **Wrong microphone:** set `mic_device`, or change the default mic in Windows Sound settings.
 - **Words get cut off at the start:** lower `vad_min_level` (e.g. `0.002`).
@@ -75,7 +77,8 @@ hotkey → microphone → voice detector → OpenAI live transcription (WebSocke
                  your app ← SendInput (Windows fake keyboard) ← typer (letter by letter, fixes)
 ```
 
-- `voice_keyboard.py`: tray icon, hotkeys, Start with Windows.
+- `voice_keyboard.py`: starts the app; tray icon, hotkeys, Start with Windows.
+- `vk/ui.py`: the window (Home + Settings).
 - `vk/app.py`: start/stop logic; decides where phrases end.
 - `vk/audio.py`: mic capture, resampling to 24 kHz, voice detection.
 - `vk/realtime.py`: OpenAI Realtime transcription connection.

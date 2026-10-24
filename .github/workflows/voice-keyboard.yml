@@ -1,0 +1,66 @@
+name: Build Voice Keyboard
+
+on:
+  push:
+    paths:
+      - "voice-keyboard/**"
+      - ".github/workflows/voice-keyboard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: voice-keyboard
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Test
+        run: python -m unittest discover tests -v
+
+      - name: Build exe
+        run: |
+          python -m vk.icon icon.ico
+          pyinstaller --noconfirm --onefile --windowed --name VoiceKeyboard --icon icon.ico `
+            --hidden-import pystray._win32 `
+            --hidden-import pynput.keyboard._win32 `
+            --hidden-import pynput.mouse._win32 `
+            voice_keyboard.py
+
+      - name: Smoke test (exe starts and stays running)
+        shell: pwsh
+        run: |
+          $p = Start-Process dist\VoiceKeyboard.exe -PassThru
+          Start-Sleep -Seconds 8
+          if ($p.HasExited) { Get-Content "$env:APPDATA\VoiceKeyboard\voicekeyboard.log" -ErrorAction SilentlyContinue; throw "exe exited early (code $($p.ExitCode))" }
+          Stop-Process $p
+          Get-Content "$env:APPDATA\VoiceKeyboard\voicekeyboard.log" -ErrorAction SilentlyContinue
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VoiceKeyboard
+          path: voice-keyboard/dist/VoiceKeyboard.exe
+
+      - name: Publish download link
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release delete voice-keyboard-latest --cleanup-tag --yes || true
+          gh release create voice-keyboard-latest dist/VoiceKeyboard.exe \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Voice Keyboard for Windows" \
+            --notes "Download **VoiceKeyboard.exe** below, double-click it, paste your OpenAI API key in Settings, and press Ctrl+Shift+Space to talk. If Windows shows 'Windows protected your PC', click **More info → Run anyway** (the app isn't code-signed). Built from ${GITHUB_SHA::7}."
