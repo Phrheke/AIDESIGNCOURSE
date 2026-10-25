@@ -24,6 +24,11 @@ if IS_WINDOWS:
     from ctypes import wintypes
 
     user32 = ctypes.WinDLL("user32", use_last_error=True)
+    # Windows normally sleeps in ~16 ms steps; ask for 1 ms so timing is precise.
+    try:
+        ctypes.WinDLL("winmm").timeBeginPeriod(1)
+    except OSError:
+        pass
 
     INPUT_KEYBOARD = 1
     KEYEVENTF_KEYUP = 0x0002

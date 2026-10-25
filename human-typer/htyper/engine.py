@@ -22,6 +22,7 @@ class TypingJob:
         self.state = "typing"
         self.pause_reason = ""
         self._target = None
+        self._next = 0.0  # when the next key is due (time.monotonic)
         self._resume = threading.Event()
         self._resume.set()
         self._stop = False
@@ -42,6 +43,7 @@ class TypingJob:
     def resume(self):
         if self.state == "paused":
             self._target = None  # type into whatever window you're in now
+            self._next = time.monotonic()  # carry on from now, no catch-up burst
             self.state, self.pause_reason = "typing", ""
             self._resume.set()
             self.on_update(self)
@@ -75,11 +77,12 @@ class TypingJob:
 
     # ---- the loop -------------------------------------------------------
 
-    def _wait(self, seconds):
-        end = time.monotonic() + seconds
+    def _wait_until_due(self):
+        # Keys are scheduled on a running clock, so a sleep that runs a bit
+        # long is made up on the next key instead of slowing the whole text.
         while not self._stop:
             self._resume.wait()
-            left = end - time.monotonic()
+            left = self._next - time.monotonic()
             if left <= 0 or self._stop:
                 return
             time.sleep(min(SLICE, left))
@@ -100,15 +103,16 @@ class TypingJob:
 
     def _run(self):
         last_update = 0.0
+        self._next = time.monotonic()
         while self.index < len(self.text) and not self._stop:
-            self._wait(self.delays[self.index])
+            self._next += self.delays[self.index]
+            self._wait_until_due()
+            while not self._stop:
+                self._resume.wait()
+                if self._stop or self._check_window():
+                    break
             if self._stop:
                 break
-            self._resume.wait()
-            if self._stop:
-                break
-            if not self._check_window():
-                continue
             self.keys.wait_for_modifiers_released()
             self.keys.type_char(self.text[self.index])
             self.index += 1
