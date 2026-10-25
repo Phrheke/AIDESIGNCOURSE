@@ -14,7 +14,7 @@ from tkinter import ttk
 
 from htyper import keys
 from htyper.engine import TypingJob
-from htyper.timing import describe_wpm, seconds_for
+from htyper.timing import describe_wpm, plan, total_seconds
 
 DEFAULTS = {
     "wpm": 75,
@@ -23,7 +23,10 @@ DEFAULTS = {
     "shift_enter": False,
     "guard_window": True,
     "countdown": 5,
+    "typos": "rare",
 }
+TYPO_CHOICES = [("off", "Never"), ("rare", "Rarely (a few in a long text)"),
+                ("sometimes", "Sometimes")]
 GREY, RED, GREEN = "#6b7280", "#dc2626", "#16a34a"
 
 
@@ -129,20 +132,31 @@ class App:
         ttk.Scale(row, from_=30, to=160, variable=self.wpm,
                   command=lambda _: self._on_speed()).pack(side="left", fill="x", expand=True, padx=8)
         ttk.Label(row, text="Faster", style="Hint.TLabel").pack(side="left")
-        self.wpm_label = ttk.Label(speed, font=("Segoe UI", 10, "bold"))
+        self.wpm_label = ttk.Label(speed, font=("Segoe UI", 10, "bold"), wraplength=480,
+                                   justify="left")
         self.wpm_label.pack(anchor="w", pady=(6, 0))
 
         opts = ttk.LabelFrame(f, text=" Options ", padding=10)
         opts.pack(fill="x", pady=(10, 0))
         self.v = {}
         for key, text in (
-                ("natural_pauses", "Natural pauses after commas, sentences and new lines"),
+                ("natural_pauses", "Natural pauses around numbers, symbols and new lines"),
                 ("remote_mode", "Remote desktop mode (AnyDesk, RustDesk, virtual machines)"),
                 ("shift_enter", "Type line breaks as Shift+Enter (so chat apps don't send early)"),
                 ("guard_window", "Pause if I switch to another window")):
             self.v[key] = tk.BooleanVar(value=bool(self.s[key]))
             ttk.Checkbutton(opts, text=text, variable=self.v[key],
-                            command=self._save).pack(anchor="w", pady=1)
+                            command=lambda: (self._save(), self._refresh_counts())).pack(
+                anchor="w", pady=1)
+        trow = ttk.Frame(opts)
+        trow.pack(anchor="w", pady=(6, 0))
+        ttk.Label(trow, text="Make a typo and fix it:").pack(side="left")
+        labels = dict(TYPO_CHOICES)
+        self.typos = tk.StringVar(value=labels.get(self.s["typos"], labels["rare"]))
+        tb = ttk.Combobox(trow, textvariable=self.typos, values=[l for _, l in TYPO_CHOICES],
+                          width=28, state="readonly")
+        tb.pack(side="left", padx=6)
+        tb.bind("<<ComboboxSelected>>", lambda e: (self._save(), self._refresh_counts()))
         crow = ttk.Frame(opts)
         crow.pack(anchor="w", pady=(6, 0))
         ttk.Label(crow, text="Start typing after").pack(side="left")
@@ -197,19 +211,29 @@ class App:
     def _refresh_counts(self):
         text = self._get_text().replace("\r\n", "\n")
         wpm = self.wpm.get()
-        self.wpm_label.configure(text=f"{wpm} words per minute: {describe_wpm(wpm)}")
+        self.wpm_label.configure(
+            text=f"Top speed {wpm} WPM ({describe_wpm(wpm)}). "
+                 f"It drifts between about {round(wpm * 0.8)} and {wpm}, never above.")
         if not text:
             self.counts.configure(text="Tip: click Paste to use what you copied.")
             return
         words = len(text.split())
+        estimate = total_seconds(plan(text, wpm, self.v["natural_pauses"].get(),
+                                      self._typo_setting(), seed=0))
         self.counts.configure(
-            text=f"{len(text):,} characters · {words:,} words · "
-                 f"takes about {fmt_time(seconds_for(text, wpm))} at {wpm} WPM")
+            text=f"{len(text):,} characters · {words:,} words · takes about {fmt_time(estimate)}")
+
+    def _typo_setting(self):
+        for key, label in TYPO_CHOICES:
+            if label == self.typos.get():
+                return key
+        return "rare"
 
     def _save(self):
         self.s.update({k: v.get() for k, v in self.v.items()})
         self.s["wpm"] = self.wpm.get()
         self.s["countdown"] = int(self.countdown.get())
+        self.s["typos"] = self._typo_setting()
         save_settings(self.s)
 
     # ---- running --------------------------------------------------------
@@ -242,7 +266,7 @@ class App:
         self.countdown_left = None
         kb = keys.Keyboard(remote=self.s["remote_mode"], newline_shift_enter=self.s["shift_enter"])
         self.job = TypingJob(
-            self._get_text(), kb, self.s["wpm"], self.s["natural_pauses"],
+            self._get_text(), kb, self.s["wpm"], self.s["natural_pauses"], self.s["typos"],
             on_update=lambda job: self._calls.put(lambda: self._show_job(job)),
             window={"current": keys.foreground_window, "is_ours": keys.window_is_ours},
             guard_window=self.s["guard_window"])

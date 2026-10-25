@@ -1,5 +1,6 @@
 """Run: python -m unittest discover tests"""
 import os
+import re
 import statistics
 import sys
 import time
@@ -9,7 +10,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from htyper import engine  # noqa: E402
 from htyper.engine import TypingJob  # noqa: E402
-from htyper.timing import MIN_DELAY, describe_wpm, plan_delays, seconds_for  # noqa: E402
+from htyper.timing import (MIN_DELAY, NEIGHBOURS, describe_wpm, is_symbol,  # noqa: E402
+                           plan, total_seconds)
 
 SAMPLE = ("Hello Sarah, thanks for the update. I'll review the design files tonight!\n"
           "Can we move the call to 3pm tomorrow? Let me know what works for you.\n\n"
@@ -17,44 +19,133 @@ SAMPLE = ("Hello Sarah, thanks for the update. I'll review the design files toni
 
 
 class FakeKeys:
+    """A pretend text box: typing appends, backspace deletes."""
+
     def __init__(self):
         self.typed = []
+        self.screen = ""
+        self.backspaces = 0
 
     def type_char(self, ch):
         self.typed.append(ch)
+        self.screen += ch
+
+    def backspace(self):
+        self.backspaces += 1
+        self.screen = self.screen[:-1]
 
     def wait_for_modifiers_released(self):
         pass
 
 
+def replay(steps):
+    keys = FakeKeys()
+    for _, kind, ch, _ in steps:
+        keys.backspace() if kind == "back" else keys.type_char(ch)
+    return keys
+
+
+LONG = ("Typing is a skill that improves with practice and patience over many "
+        "weeks of steady work at the keyboard ") * 25
+
+
+def word_speeds(text, steps, wpm):
+    """Speed of each word (as a fraction of wpm), ignoring the first word."""
+    delays = [s[0] for s in steps]
+    out = []
+    for m in re.finditer(r"[A-Za-z]+ ", text):
+        if m.start() == 0:
+            continue
+        seconds = sum(delays[m.start():m.end()])
+        out.append((len(m.group()) * 12 / seconds) / wpm)
+    return out
+
+
 class TimingTest(unittest.TestCase):
-    def test_total_time_matches_wpm(self):
-        for wpm in (40, 75, 120):
-            delays = plan_delays(SAMPLE, wpm, seed=1)
-            target = seconds_for(SAMPLE, wpm)
-            self.assertAlmostEqual(sum(delays), target, delta=target * 0.03)
+    def test_speed_drifts_below_the_chosen_wpm_but_never_above(self):
+        for wpm in (45, 75, 110):
+            speeds = word_speeds(LONG, plan(LONG, wpm, natural=False, typos="off", seed=1), wpm)
+            self.assertLessEqual(max(speeds), 1.0 + 1e-9, "went faster than the chosen speed")
+            self.assertGreater(min(speeds), 0.6)
+            self.assertTrue(0.82 < statistics.mean(speeds) < 0.97, statistics.mean(speeds))
+            self.assertGreater(max(speeds), 0.95, "never came back up near the top speed")
+            self.assertGreater(statistics.pstdev(speeds), 0.02, "speed doesn't vary")
 
-    def test_delays_vary_and_are_never_robotic(self):
-        delays = plan_delays(SAMPLE, 75, seed=2)[1:]
-        self.assertTrue(all(d >= MIN_DELAY for d in delays))
-        self.assertGreater(len(set(round(d, 4) for d in delays)), len(delays) * 0.8)
-        self.assertGreater(statistics.pstdev(delays) / statistics.mean(delays), 0.3)
+    def test_pace_changes_gradually_not_randomly(self):
+        speeds = word_speeds(LONG, plan(LONG, 75, natural=False, typos="off", seed=2), 75)
+        jumps = [abs(a - b) for a, b in zip(speeds, speeds[1:])]
+        self.assertLess(statistics.mean(jumps), 0.12)
 
-    def test_natural_pauses_after_sentences_and_lines(self):
-        delays = plan_delays(SAMPLE, 75, seed=3)
-        after = lambda chars: statistics.mean(  # noqa: E731
-            delays[i] for i in range(1, len(SAMPLE)) if SAMPLE[i - 1] in chars)
-        normal = statistics.median(delays[1:])
-        self.assertGreater(after(".!?"), normal * 2.5)
-        self.assertGreater(after("\n"), normal * 3)
-        self.assertGreater(after(","), normal * 1.5)
+    def test_no_pauses_between_plain_words(self):
+        steps = plan(LONG, 75, natural=True, typos="off", seed=3)
+        per_key = 12 / 75
+        self.assertLess(max(s[0] for s in steps), per_key * 4)
 
-    def test_without_natural_pauses_rhythm_is_even(self):
-        delays = plan_delays(SAMPLE, 75, natural=False, seed=4)[1:]
-        self.assertLess(max(delays), statistics.median(delays) * 4)
+    def test_pauses_around_numbers_and_symbols(self):
+        text = "Pay me 4500 dollars, today. Call 555-0199 or email a@b.co now please " * 10
+        steps = plan(text, 75, natural=True, typos="off", seed=4)
+        d = [s[0] for s in steps]
+        letters = [d[i] for i in range(1, len(text))
+                   if text[i].isalpha() and text[i - 1].isalpha()]
+        into_symbol = [d[i] for i in range(1, len(text))
+                       if is_symbol(text[i]) and not is_symbol(text[i - 1])]
+        after_sentence = [d[i] for i in range(1, len(text)) if text[i - 1] == "."
+                          and text[i] == " "]
+        typical = statistics.median(letters)
+        self.assertGreater(statistics.mean(into_symbol), typical * 1.8)
+        self.assertGreater(statistics.mean(after_sentence), typical * 3)
+
+    def test_new_lines_get_a_pause(self):
+        text = "first line here\nsecond line here\n" * 10
+        d = [s[0] for s in plan(text, 75, typos="off", seed=5)]
+        after_nl = [d[i] for i in range(1, len(text)) if text[i - 1] == "\n"]
+        self.assertGreater(statistics.mean(after_nl), 12 / 75 * 3)
+
+    def test_final_text_is_exact_even_with_typos(self):
+        for seed in range(20):
+            keys = replay(plan(SAMPLE, 75, typos="sometimes", seed=seed))
+            self.assertEqual(keys.screen, SAMPLE)
+
+    def test_typos_are_occasional_neighbour_keys_and_get_fixed(self):
+        steps = plan(LONG, 75, typos="rare", seed=6)
+        typos = 0
+        # count wrong keys: typed characters that don't match the text at that spot
+        keys = FakeKeys()
+        for _, kind, ch, _ in steps:
+            if kind == "back":
+                keys.backspace()
+                continue
+            pos = len(keys.screen)
+            if LONG[pos] != ch:
+                typos += 1
+                self.assertIn(ch.lower(), NEIGHBOURS[LONG[pos].lower()])
+            keys.type_char(ch)
+        words = len(LONG.split())
+        self.assertEqual(keys.screen, LONG)
+        self.assertTrue(2 <= typos <= words * 0.05, f"{typos} typos in {words} words")
+        self.assertGreater(keys.backspaces, 0)
+
+    def test_typos_off_means_no_backspaces(self):
+        steps = plan(LONG, 75, typos="off", seed=7)
+        self.assertNotIn("back", [s[1] for s in steps])
+        self.assertEqual("".join(s[2] for s in steps), LONG)
+
+    def test_numbers_and_symbols_never_get_typos(self):
+        text = "Order 12345 costs $99.95 (tax 7%) ref #A-77 " * 40
+        for seed in range(5):
+            steps = plan(text, 75, typos="sometimes", seed=seed)
+            keys = FakeKeys()
+            for _, kind, ch, _ in steps:
+                if kind == "back":
+                    keys.backspace()
+                    continue
+                pos = len(keys.screen)
+                if text[pos] != ch:
+                    self.assertTrue(text[pos].isalpha())
+                keys.type_char(ch)
 
     def test_different_every_run(self):
-        self.assertNotEqual(plan_delays(SAMPLE, 75), plan_delays(SAMPLE, 75))
+        self.assertNotEqual(plan(SAMPLE, 75), plan(SAMPLE, 75))
 
     def test_labels(self):
         self.assertEqual(describe_wpm(75), "professional typist")
@@ -65,14 +156,15 @@ class EngineTest(unittest.TestCase):
     def run_job(self, text, wpm=4000, **kw):
         keys = FakeKeys()
         updates = []
+        kw.setdefault("typos", "off")
         job = TypingJob(text, keys, wpm, on_update=lambda j: updates.append(j.state), **kw)
         job.start()
         return job, keys, updates
 
     def test_types_text_exactly(self):
-        job, keys, updates = self.run_job(SAMPLE)
-        job.join(len(SAMPLE) * MIN_DELAY * 2 + 5)
-        self.assertEqual("".join(keys.typed), SAMPLE)
+        job, keys, updates = self.run_job(SAMPLE, typos="sometimes")
+        job.join(len(SAMPLE) * MIN_DELAY * 3 + 5)
+        self.assertEqual(keys.screen, SAMPLE)
         self.assertEqual(job.state, "done")
         self.assertEqual(updates[-1], "done")
 
@@ -129,7 +221,7 @@ class EngineTest(unittest.TestCase):
         t = time.monotonic()
         job.join(20)
         took = time.monotonic() - t
-        target = seconds_for(text, wpm)
+        target = total_seconds(job.steps)
         self.assertLess(abs(took - target), target * 0.35 + engine.SLICE)
 
 

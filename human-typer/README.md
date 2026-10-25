@@ -2,8 +2,10 @@
 
 Paste some text, press **Start**, click into any app, and it types the text **exactly**, the way a person at a keyboard would.
 
-- **Human rhythm.** Every keystroke has a slightly different gap. Common letter pairs ("th", "in", "er") come quicker, capitals and symbols take a little longer, and there are short breaths after commas, sentences and new lines.
-- **Your speed.** Choose 30–160 words per minute. Around 60–90 WPM is a professional typist. The time estimate is accurate because the overall speed matches what you pick.
+- **Human rhythm.** Every keystroke has a slightly different gap, and common letter pairs ("th", "in", "er") come quicker.
+- **Speed that drifts.** The speed you pick (30–160 words per minute) is the *top* speed. The pace wanders from word to word, mostly a little below it (down to about 80%) and now and then back up to it, but it never goes above. Around 60–90 WPM is a professional typist.
+- **Pauses around numbers and symbols.** It slows to reach for digits and symbols ($, %, @, 4521…), takes a breath after commas and full stops, and pauses after new lines. Plain words flow without pauses.
+- **Typos that fix themselves.** Now and then it hits a key next to the right one (T → Y, S → D), types a key or two more, notices, backspaces and fixes it. You choose Never, Rarely or Sometimes. Numbers and symbols are never mistyped, and the final text is always exact.
 - **Exact.** Line breaks, tabs, symbols, accents and emoji are all typed as written.
 - **Safe.** **Esc** stops, **F8** pauses and resumes. If you switch to another window it pauses by itself, so it never types into the wrong place.
 - **Works over remote desktop.** Tick *Remote desktop mode* for AnyDesk, RustDesk or virtual machines. It then presses the real keys, which those tools forward.
@@ -31,7 +33,8 @@ If Windows says "Windows protected your PC", click **More info → Run anyway**.
 
 | Option | When to use it |
 |---|---|
-| Natural pauses | On by default. Turn it off for a perfectly steady rhythm. |
+| Natural pauses | On by default. Pauses around numbers, symbols, punctuation and new lines. |
+| Make a typo and fix it | **Never**, **Rarely** (about 1 in 50 words, the default) or **Sometimes** (about 1 in 22 words). There are always at least 8 words between typos. |
 | Remote desktop mode | Typing into AnyDesk, RustDesk, TeamViewer or a virtual machine. Both computers should use the same keyboard layout. |
 | Type line breaks as Shift+Enter | Chat apps (WhatsApp, Slack, Claude, ChatGPT) where Enter would send the message early. |
 | Pause if I switch windows | On by default. It's the safety net that stops it typing into the wrong app. |

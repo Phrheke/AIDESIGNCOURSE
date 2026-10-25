@@ -141,6 +141,11 @@ class Keyboard:
         elif not (self.remote and _type_real_keys(ch)):
             _type_unicode(ch)
 
+    def backspace(self):
+        if not IS_WINDOWS:
+            raise RuntimeError("Typing only works on Windows")
+        _tap_vk(VK_BACK)
+
     def wait_for_modifiers_released(self):
         # If you're holding Ctrl/Alt/Shift, letters would turn into shortcuts.
         while any(key_down(vk) for vk in MODIFIER_VKS):

@@ -2,7 +2,7 @@
 import threading
 import time
 
-from .timing import plan_delays
+from .timing import plan
 
 SLICE = 0.03  # how often waits check for pause/stop
 
@@ -10,15 +10,16 @@ SLICE = 0.03  # how often waits check for pause/stop
 class TypingJob:
     """States: "typing", "paused", "stopped", "done"."""
 
-    def __init__(self, text, keys, wpm, natural=True, on_update=None,
+    def __init__(self, text, keys, wpm, natural=True, typos="rare", on_update=None,
                  window=None, guard_window=False, seed=None):
         self.text = text.replace("\r\n", "\n").replace("\r", "\n")
         self.keys = keys
-        self.delays = plan_delays(self.text, wpm, natural, seed)
+        self.steps = plan(self.text, wpm, natural, typos, seed)
+        self.step = 0
         self.on_update = on_update or (lambda job: None)
         self.window = window  # dict with "current", "is_ours" callables
         self.guard_window = guard_window
-        self.index = 0
+        self.done_chars = 0
         self.state = "typing"
         self.pause_reason = ""
         self._target = None
@@ -69,11 +70,11 @@ class TypingJob:
 
     @property
     def progress(self):
-        return self.index / len(self.text) if self.text else 1.0
+        return self.done_chars / len(self.text) if self.text else 1.0
 
     @property
     def seconds_left(self):
-        return sum(self.delays[self.index:])
+        return sum(s[0] for s in self.steps[self.step:])
 
     # ---- the loop -------------------------------------------------------
 
@@ -104,8 +105,9 @@ class TypingJob:
     def _run(self):
         last_update = 0.0
         self._next = time.monotonic()
-        while self.index < len(self.text) and not self._stop:
-            self._next += self.delays[self.index]
+        while self.step < len(self.steps) and not self._stop:
+            delay, kind, ch, done = self.steps[self.step]
+            self._next += delay
             self._wait_until_due()
             while not self._stop:
                 self._resume.wait()
@@ -114,8 +116,12 @@ class TypingJob:
             if self._stop:
                 break
             self.keys.wait_for_modifiers_released()
-            self.keys.type_char(self.text[self.index])
-            self.index += 1
+            if kind == "back":
+                self.keys.backspace()
+            else:
+                self.keys.type_char(ch)
+            self.step += 1
+            self.done_chars = done
             now = time.monotonic()
             if now - last_update > 0.1:
                 last_update = now
