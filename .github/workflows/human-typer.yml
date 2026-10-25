@@ -1,0 +1,63 @@
+name: Build Human Typer
+
+on:
+  push:
+    paths:
+      - "human-typer/**"
+      - ".github/workflows/human-typer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: human-typer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install pyinstaller pillow
+
+      - name: Test
+        run: python -m unittest discover tests -v
+
+      - name: Real typing test (types into a text box, normal and remote mode)
+        run: python tests/windows_typing_check.py
+
+      - name: Build exe
+        run: |
+          python make_icon.py icon.ico
+          pyinstaller --noconfirm --onefile --windowed --name HumanTyper --icon icon.ico `
+            --add-data "icon.ico;." human_typer.py
+
+      - name: Smoke test (exe starts and stays open)
+        shell: pwsh
+        run: |
+          $p = Start-Process dist\HumanTyper.exe -PassThru
+          Start-Sleep -Seconds 8
+          if ($p.HasExited) { throw "exe exited early (code $($p.ExitCode))" }
+          Stop-Process $p
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HumanTyper
+          path: human-typer/dist/HumanTyper.exe
+
+      - name: Publish download link
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release delete human-typer-latest --cleanup-tag --yes || true
+          gh release create human-typer-latest dist/HumanTyper.exe \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Human Typer for Windows" \
+            --notes "Paste text, press Start, click into any app: it types the text like a person would. Download **HumanTyper.exe** below and double-click it. If Windows shows 'Windows protected your PC', click **More info → Run anyway** (the app isn't code-signed). Built from ${GITHUB_SHA::7}."
